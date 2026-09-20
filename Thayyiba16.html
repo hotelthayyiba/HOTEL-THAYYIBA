@@ -1,0 +1,2601 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database Hotel Thayyiba</title>
+
+<!-- Favicon Logo 'T' Estetik Modern Warna Biru -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23123A5C'/><path d='M 25 30 L 75 30 L 75 42 L 56 42 L 56 78 L 44 78 L 44 42 L 25 42 Z' fill='%232C7CB8'/><path d='M 25 30 L 75 30 L 75 35 L 56 35 L 56 78 L 44 78 L 44 35 L 25 35 Z' fill='%234FA3DE'/></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- SheetJS (XLSX) untuk Export Excel & html2pdf.js untuk Export PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+/* LOADER CHART.JS DENGAN CADANGAN (jika satu CDN diblokir/gagal, otomatis coba yang lain) */
+(function(){
+  var sources = [
+    'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js',
+    'https://unpkg.com/chart.js@4.4.4/dist/chart.umd.min.js'
+  ];
+  var i = 0;
+  function tryLoad(){
+    if(i >= sources.length){
+      window.__chartJsLoadFailed = true;
+      console.error('Semua sumber CDN Chart.js gagal dimuat. Cek koneksi internet / ekstensi ad-blocker / firewall jaringan.');
+      return;
+    }
+    var s = document.createElement('script');
+    s.src = sources[i];
+    s.onload = function(){
+      if(typeof Chart === 'undefined'){ i++; tryLoad(); }
+    };
+    s.onerror = function(){ i++; tryLoad(); };
+    document.head.appendChild(s);
+  }
+  tryLoad();
+})();
+</script>
+<style>
+  :root{
+    --bg:#EFF6FB;
+    --panel:#FFFFFF;
+    --blue-wash:#E3F1FB;
+    --blue-line:#D3E6F3;
+    --blue-mid:#2C7CB8;
+    --blue-mid-hover:#256A9E;
+    --blue-dark:#123A5C;
+    --gray-soft:#8FA4B6;
+    --gray-line:#E1E8EE;
+    --ok-bg:#E4F5ED;
+    --ok-fg:#1E8A56;
+    --occ-bg:#123A5C;
+    --occ-fg:#FFFFFF;
+    --checkout-bg:#FBEAEA;
+    --checkout-fg:#B23A3A;
+    --danger:#B23A3A;
+    --radius-s:6px;
+    --radius-m:10px;
+    --radius-l:14px;
+    --shadow:0 1px 2px rgba(18,58,92,.06), 0 4px 14px rgba(18,58,92,.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--blue-dark);
+    font-family:'Inter',system-ui,sans-serif;
+    font-size:13.5px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.brand,.nav-label,.stat-num{font-family:'Manrope',system-ui,sans-serif;}
+  button{font-family:inherit;font-size:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;font-size:inherit;}
+  ::selection{background:var(--blue-mid);color:#fff;}
+
+  .app{display:flex;min-height:100vh;}
+
+  /* SIDEBAR */
+  .sidebar{
+    width:220px;flex-shrink:0;background:var(--blue-dark);
+    display:flex;flex-direction:column;transition:width .18s ease;
+    position:sticky;top:0;height:100vh;z-index:5;overflow-y:auto;
+  }
+  .sidebar.collapsed{width:64px;}
+  .sidebar-head{
+    display:flex;align-items:center;gap:10px;padding:18px 16px;
+    border-bottom:1px solid rgba(255,255,255,.08);min-height:26px;
+  }
+  .sidebar-head .mark{
+    width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#4FA3DE,#1E5C8A);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .sidebar-head .mark svg{width:16px;height:16px;}
+  .brand{color:#fff;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;}
+  .brand small{display:block;color:#9FC2DE;font-weight:500;font-size:10.5px;letter-spacing:.02em;margin-top:1px;}
+  .sidebar.collapsed .brand{display:none;}
+
+  .nav{flex:1;padding:14px 10px;display:flex;flex-direction:column;gap:3px;}
+  .nav-item{
+    display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:8px;
+    color:#B9D2E5;text-decoration:none;white-space:nowrap;overflow:hidden;
+    border:none;background:transparent;text-align:left;width:100%;
+  }
+  .nav-item svg{width:17px;height:17px;flex-shrink:0;}
+  .nav-item span{font-size:13px;font-weight:600;}
+  .sidebar.collapsed .nav-item span{display:none;}
+  .sidebar.collapsed .nav-item{justify-content:center;}
+  .nav-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .nav-item.active{background:var(--blue-mid);color:#fff;}
+
+  .sidebar-foot{padding:12px 10px;border-top:1px solid rgba(255,255,255,.08);}
+  .collapse-btn{
+    display:flex;align-items:center;gap:10px;width:100%;padding:8px 11px;border-radius:8px;
+    background:transparent;border:none;color:#9FC2DE;
+  }
+  .collapse-btn:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .collapse-btn svg{width:16px;height:16px;transition:transform .18s ease;flex-shrink:0;}
+  .sidebar.collapsed .collapse-btn svg{transform:rotate(180deg);}
+  .sidebar.collapsed .collapse-btn span{display:none;}
+
+  /* MAIN */
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .topbar{
+    background:var(--panel);border-bottom:1px solid var(--gray-line);
+    padding:14px 26px;display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;z-index:4;
+  }
+  .topbar h1{font-size:18px;margin:0;color:var(--blue-dark);}
+  .topbar .sub{font-size:12px;color:var(--gray-soft);margin-top:2px;}
+  .clock{text-align:right;}
+  .clock .date{font-size:13px;font-weight:700;color:var(--blue-dark);}
+  .clock .time{font-size:11.5px;color:var(--blue-mid);font-variant-numeric:tabular-nums;}
+
+  .page{display:none;padding:22px 26px 40px;}
+  .page.active{display:block;}
+
+  /* COMMON UI */
+  .panel{
+    background:var(--panel);border:1px solid var(--gray-line);border-radius:var(--radius-l);
+    box-shadow:var(--shadow);padding:18px 20px;margin-bottom:18px;
+  }
+  .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap;}
+  .panel-head h2{font-size:14.5px;margin:0;color:var(--blue-dark);}
+  .panel-head .desc{font-size:11.5px;color:var(--gray-soft);margin-top:2px;}
+
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;
+    border:1px solid var(--blue-line);background:var(--blue-wash);color:var(--blue-dark);
+    font-weight:600;font-size:12.5px;
+  }
+  .btn:hover{background:var(--blue-line);}
+  .btn.primary{background:var(--blue-mid);border-color:var(--blue-mid);color:#fff;}
+  .btn.primary:hover{background:var(--blue-mid-hover);}
+  .btn.ghost{background:transparent;border-color:transparent;color:var(--blue-mid);padding:8px 10px;}
+  .btn.ghost:hover{background:var(--blue-wash);}
+  .btn.sm{padding:5px 10px;font-size:11.5px;}
+  .btn.danger{background:#FBEAEA;border-color:#F3D2D2;color:var(--danger);}
+  .btn.warning{background:#FFF2D6;border-color:#FCE3B3;color:#8A5A00;}
+  .btn svg{width:14px;height:14px;}
+
+  .tab-group{display:flex;gap:8px;}
+  .tab-btn{
+    padding:8px 16px;border-radius:8px;border:1px solid var(--blue-line);
+    background:var(--panel);color:var(--blue-dark);font-weight:600;font-size:12.5px;
+  }
+  .tab-btn:hover{background:var(--blue-wash);}
+  .tab-btn.active{background:var(--blue-mid);color:#fff;border-color:var(--blue-mid);}
+
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-size:11.5px;font-weight:600;color:var(--blue-mid);}
+  .field input,.field select,.field textarea{
+    padding:8px 10px;border:1px solid var(--gray-line);border-radius:7px;
+    background:#FBFDFE;color:var(--blue-dark);outline:none;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue-mid);background:#fff;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+
+  table{width:100%;border-collapse:collapse;}
+  th{
+    text-align:left;font-size:11px;color:var(--gray-soft);font-weight:700;
+    padding:8px 10px;border-bottom:1px solid var(--gray-line);white-space:nowrap;
+  }
+  td{padding:9px 10px;border-bottom:1px solid #EEF3F7;font-size:12.5px;vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .table-wrap{overflow-x:auto;}
+
+  /* BADGES */
+  .badge{
+    display:inline-flex;align-items:center;padding:3px 9px;border-radius:6px;
+    font-size:10.5px;font-weight:800;letter-spacing:0.03em;white-space:nowrap;
+  }
+  .badge.vvip{background:linear-gradient(135deg, #FFD700, #FFA500);color:#3D2500;box-shadow:0 1px 4px rgba(255,215,0,0.4);}
+  .badge.vip1{background:linear-gradient(135deg, #E0E0E0, #B0B0B0);color:#1A1A1A;}
+  .badge.vip2{background:linear-gradient(135deg, #CD7F32, #A0522D);color:#FFFFFF;}
+  .badge.reguler{background:#D1E5F4;color:#123A5C;}
+  .badge.new{background:#E2F0D9;color:#276A3C;}
+  .badge.manual::after{content:"•m";font-weight:600;opacity:.75;margin-left:3px;font-size:9px;}
+
+  /* KONSISTENSI STATUS TAG DENGAN TERSEDIA */
+  .room-stat-badge {
+    font-size:9.5px;
+    font-weight:600;
+    padding:2px 6px;
+    border-radius:4px;
+    text-transform:lowercase;
+    display:inline-block;
+    text-align:center;
+    width:fit-content;
+  }
+  .room-stat-badge.avail {
+    background:rgba(30,138,86,.1);
+    color:var(--ok-fg);
+  }
+  .room-stat-badge.terisi {
+    background:rgba(255,255,255,.2);
+    color:#FFFFFF;
+  }
+  .room-stat-badge.checkedout {
+    background:rgba(178,58,58,.12);
+    color:var(--checkout-fg);
+  }
+
+  .empty{padding:26px;text-align:center;color:var(--gray-soft);font-size:12.5px;}
+
+  /* MODAL */
+  .overlay{
+    position:fixed;inset:0;background:rgba(18,58,92,.35);display:none;
+    align-items:center;justify-content:center;z-index:50;padding:20px;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:#fff;border-radius:var(--radius-l);width:100%;max-width:520px;
+    max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(18,58,92,.25);
+  }
+  .modal-head{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 20px;border-bottom:1px solid var(--gray-line);
+  }
+  .modal-head h3{margin:0;font-size:15px;}
+  .modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:12px;}
+  .modal-foot{padding:14px 20px;border-top:1px solid var(--gray-line);display:flex;justify-content:flex-end;gap:8px;}
+  .icon-x{background:none;border:none;color:var(--gray-soft);padding:4px;border-radius:6px;}
+  .icon-x:hover{background:var(--blue-wash);color:var(--blue-dark);}
+  .icon-x svg{width:16px;height:16px;}
+  .radio-row{display:flex;gap:16px;}
+  .radio-row label{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--blue-dark);}
+
+  .uppercase-input input, .uppercase-input select {
+    text-transform: uppercase;
+  }
+
+  /* SEARCH / AUTOCOMPLETE */
+  .search-wrap{position:relative;max-width:340px;}
+  .search-wrap input{width:100%;padding:9px 12px 9px 34px;border-radius:9px;border:1px solid var(--gray-line);background:#FBFDFE;}
+  .search-wrap svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--gray-soft);}
+  .suggest{
+    position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--gray-line);
+    border-radius:10px;box-shadow:var(--shadow);z-index:20;overflow:hidden;display:none;max-height:260px;overflow-y:auto;
+  }
+  .suggest.show{display:block;}
+  .suggest-item{padding:9px 12px;display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #F1F5F8;}
+  .suggest-item:last-child{border-bottom:none;}
+  .suggest-item:hover{background:var(--blue-wash);cursor:pointer;}
+  .suggest-item b{font-weight:700;font-size:12.5px;}
+  .suggest-item span{font-size:11.5px;color:var(--gray-soft);}
+  mark{background:#FCE7A8;color:inherit;border-radius:2px;padding:0 1px;}
+
+  /* ROOMS LAYOUT */
+  .date-picker-bar{
+    display:flex;align-items:center;gap:12px;background:var(--panel);
+    border:1px solid var(--gray-line);border-radius:var(--radius-m);
+    padding:10px 16px;margin-bottom:18px;box-shadow:var(--shadow);
+    flex-wrap:wrap;
+  }
+  .date-picker-bar input[type="date"]{
+    padding:6px 10px;border:1px solid var(--gray-line);border-radius:6px;font-weight:700;color:var(--blue-dark);
+  }
+
+  .room-cat{margin-bottom:20px;}
+  .room-cat-title{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .room-cat-title h3{font-size:13px;margin:0;color:var(--blue-mid);letter-spacing:.02em;}
+  .room-cat-title .count{font-size:11px;color:var(--gray-soft);}
+  
+  .room-list-vertical{display:flex;flex-direction:column;gap:8px;}
+  
+  /* GRID KAMAR DENGAN PENAMBAHAN STATUS NIKAH & JUMLAH ORANG */
+  .room-row-card{
+    background:var(--ok-bg);border:1px solid var(--gray-line);border-radius:var(--radius-m);
+    padding:10px 14px;
+    display:grid;
+    grid-template-columns: 45px 85px minmax(140px, 1.2fr) 90px 75px 100px;
+    align-items:center;
+    gap:8px;
+    cursor:pointer;transition:all .15s ease;
+  }
+  .room-row-card:hover{transform:translateX(3px);box-shadow:var(--shadow);}
+  .room-row-card .num{font-size:15px;font-weight:800;color:var(--ok-fg);}
+  
+  .room-row-card .g-col{
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    font-size:12.5px;font-weight:600;
+  }
+  .room-row-card .g-col.sub-col{opacity:0.9;}
+  .room-row-card .price-col{text-align:right;}
+  .room-row-card .price-tag{font-size:12.5px;font-weight:700;color:var(--ok-fg);}
+  .room-row-card .pay-sub{
+    font-size:10px;font-style:italic;font-weight:400;opacity:0.65;display:block;margin-top:1px;
+  }
+
+  /* Occupied Style */
+  .room-row-card.occ{background:var(--occ-bg);border-color:var(--occ-bg);}
+  .room-row-card.occ .num{color:#fff;}
+  .room-row-card.occ .g-col{color:#fff;}
+  .room-row-card.occ .price-tag{color:#fff;}
+  .room-row-card.occ .pay-sub{color:#E3F1FB;}
+
+  /* Checked Out Style */
+  .room-row-card.checked-out-card{
+    background:var(--checkout-bg);
+    border-color:#F3D2D2;
+  }
+  .room-row-card.checked-out-card .num{color:var(--checkout-fg);}
+  .room-row-card.checked-out-card .g-col{color:var(--checkout-fg);}
+  .room-row-card.checked-out-card .price-tag{color:var(--checkout-fg);}
+  .room-row-card.checked-out-card .pay-sub{color:var(--checkout-fg);}
+
+  .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+  .stat-card{background:var(--panel);border:1px solid var(--gray-line);border-radius:var(--radius-l);padding:14px 16px;box-shadow:var(--shadow);}
+  .stat-card .lbl{font-size:11px;color:var(--gray-soft);font-weight:600;}
+  .stat-num{font-size:20px;font-weight:800;color:var(--blue-dark);margin-top:4px;}
+  .stat-card .sub{font-size:10.5px;color:var(--gray-soft);margin-top:2px;}
+
+  .history-toggle{background:none;border:none;color:var(--blue-mid);font-weight:700;font-size:11.5px;padding:0;}
+  .history-toggle:hover{text-decoration:underline;}
+  .history-list{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:3px;}
+  .history-list li{
+    font-size:11.5px;color:var(--blue-dark);display:flex;justify-content:space-between;
+    align-items:center;gap:10px;background:var(--blue-wash);padding:5px 8px;border-radius:6px;
+  }
+
+  .chart-box{height:270px;position:relative;}
+  .chart-box.small{height:230px;}
+  .chart-box .chart-empty-msg{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    text-align:center;padding:16px;color:#8a97a6;font-size:12.5px;line-height:1.5;
+    background:#F8FAFC;border:1px dashed #D7E2EC;border-radius:8px;
+  }
+  .chart-box .chart-empty-msg b{color:#B23A3A;}
+
+  .total-pill{
+    display:inline-flex;align-items:center;gap:6px;background:var(--blue-wash);
+    border:1px solid var(--blue-line);color:var(--blue-dark);padding:6px 12px;border-radius:99px;
+    font-weight:700;font-size:12.5px;
+  }
+
+  .clickable-name{color:var(--blue-mid);cursor:pointer;text-decoration:none;font-weight:700;}
+  .clickable-name:hover{text-decoration:underline;}
+
+  /* PERCENTAGE BADGES & LINE CHART STYLES */
+  .badge-pct {
+    font-weight: 700;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  .badge-pct.up { background: #FBEAEA; color: var(--danger); }
+  .badge-pct.down { background: var(--ok-bg); color: var(--ok-fg); }
+  .badge-pct.flat { background: #E1E8EE; color: var(--gray-soft); }
+
+  /* GUEST SPLIT LAYOUT FOR BOOKING LIST */
+  .guests-layout {
+    display: grid;
+    grid-template-columns: 2fr 1.1fr;
+    gap: 18px;
+    align-items: start;
+  }
+
+  /* BILL HOTEL PRINT/PDF STYLES */
+  .hotel-bill-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid var(--gray-line);
+    padding: 24px;
+    font-family: 'Inter', sans-serif;
+    color: #123A5C;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  }
+  .bill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 2px solid #123A5C;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+  }
+  .bill-brand-title {
+    font-family: 'Manrope', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #123A5C;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .bill-brand-sub {
+    font-size: 11px;
+    color: #2C7CB8;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+  .bill-title-tag {
+    text-align: right;
+  }
+  .bill-title-tag h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    color: #123A5C;
+    letter-spacing: 1px;
+  }
+  .bill-grid-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    background: #F8FAFC;
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 1px solid #E1E8EE;
+    margin-bottom: 20px;
+  }
+  .bill-info-item label {
+    font-size: 10.5px;
+    color: #8FA4B6;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .bill-info-item div {
+    font-size: 13px;
+    font-weight: 700;
+    color: #123A5C;
+  }
+  .bill-table-custom {
+    width: 100%;
+    margin-bottom: 20px;
+    border-collapse: collapse;
+  }
+  .bill-table-custom th {
+    background: #123A5C;
+    color: #ffffff;
+    font-weight: 700;
+    padding: 8px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+  }
+  .bill-table-custom td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #E1E8EE;
+    font-size: 12.5px;
+  }
+  .bill-footer-sign {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 30px;
+    padding-top: 15px;
+  }
+  .bill-sign-box {
+    text-align: center;
+    width: 160px;
+  }
+  .bill-sign-line {
+    border-bottom: 1px solid #123A5C;
+    height: 45px;
+    margin-bottom: 4px;
+  }
+
+  @media (max-width:860px){
+    .stat-row{grid-template-columns:1fr 1fr;}
+    .grid-2,.grid-3{grid-template-columns:1fr;}
+    .sidebar{position:fixed;}
+    .room-row-card{grid-template-columns: 40px 1fr; gap:6px;}
+    .guests-layout { grid-template-columns: 1fr; }
+  }
+  @media print{
+    .sidebar,.topbar,.no-print,.panel-head .btn{display:none !important;}
+    .page{display:none !important;padding:0;}
+    .page.print-target{display:block !important;}
+    body{background:#fff;}
+    .panel{box-shadow:none;border:1px solid #ccc;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M3 21V9l9-6 9 6v12" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 21v-7h6v7" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="brand">Hotel Thayyiba<small>Manajemen Database</small></div>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="nav-item active" data-page="rooms">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v7"/><path d="M3 18h18"/><path d="M5 11V7a2 2 0 0 1 2-2h3v6"/><path d="M3 21v-3"/><path d="M21 21v-3"/></svg>
+        <span>Kamar Hari Ini</span>
+      </button>
+      <button class="nav-item" data-page="guests">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Data Tamu</span>
+      </button>
+      <button class="nav-item" data-page="cashflow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
+        <span>Cashflow Harian</span>
+      </button>
+      <button class="nav-item" data-page="analytics">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.5 9 13 14.5l-3-3L7 15"/></svg>
+        <span>Analitik & Laporan</span>
+      </button>
+    </nav>
+    <div class="sidebar-foot">
+      <button class="collapse-btn" id="collapseBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        <span>Ciutkan Menu</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="pageTitle">Kamar Terisi Hari Ini</h1>
+        <div class="sub" id="pageSub">Status kamar realtime</div>
+      </div>
+      <div class="clock">
+        <div class="date" id="clockDate">-</div>
+        <div class="time" id="clockTime">-</div>
+      </div>
+    </header>
+
+    <!-- PAGE: ROOMS -->
+    <section class="page active" id="page-rooms">
+      <div class="date-picker-bar">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <label style="font-weight:700;font-size:12px;">Pilih Tanggal:</label>
+          <input type="date" id="roomViewDate">
+        </div>
+        <button class="btn sm" id="btnPrevDay">&laquo; Kemarin</button>
+        <button class="btn ghost sm" id="btnToday">Hari Ini</button>
+        <button class="btn sm" id="btnNextDay">Besok &raquo;</button>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat-card"><div class="lbl">Total Kamar</div><div class="stat-num" id="stTotal">0</div><div class="sub">semua kategori</div></div>
+        <div class="stat-card">
+          <div class="lbl">Terisi</div>
+          <div class="stat-num"><span id="stOcc">0</span> <small id="stOccPct" style="font-size:12px;color:var(--blue-mid);font-weight:700;">(0%)</small></div>
+          <div class="sub">kamar terisi</div>
+        </div>
+        <div class="stat-card"><div class="lbl">Tersedia</div><div class="stat-num" id="stAvail">0</div><div class="sub">kamar kosong</div></div>
+        <div class="stat-card"><div class="lbl">Checked Out</div><div class="stat-num" id="stCheckedOut">0</div><div class="sub">selesai menginap</div></div>
+      </div>
+      <div id="roomCategories"></div>
+    </section>
+
+    <!-- PAGE: GUESTS -->
+    <section class="page" id="page-guests">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Data Tamu</h2>
+            <div class="desc">Kelola seluruh data tamu hotel Anda</div>
+          </div>
+          <button class="btn primary" id="btnAddGuest">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah Tamu
+          </button>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div class="tab-group">
+            <button class="tab-btn active" id="tabDataTamu">Data Tamu</button>
+            <button class="tab-btn" id="tabTop10">Top 10 Tamu</button>
+            <button class="tab-btn" id="tabBlacklist" style="color:var(--danger);">Blacklist</button>
+          </div>
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="guestSearch" placeholder="Ketik nama atau nomor HP..." autocomplete="off">
+            <div class="suggest" id="guestSuggest"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- SPLIT LAYOUT UNTUK DATA TAMU DAN SEGMEN BOOKING LIST DISAMPING KANAN -->
+      <div class="guests-layout">
+        <div class="panel">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nama Lengkap</th><th>Nomor HP</th><th>Asal Daerah</th><th>Status Perkawinan</th>
+                  <th>Tier</th><th>Total Inap (Hari)</th><th>Plat Nomor</th><th>Riwayat Inap</th><th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="guestTable"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="guestEmpty" style="display:none;">Belum ada data tamu.</div>
+        </div>
+
+        <!-- SEGMEN BOOKING LIST DISAMPING KANAN DATA TAMU -->
+        <div class="panel" style="margin-bottom:0;">
+          <div class="panel-head" style="margin-bottom:10px;">
+            <div>
+              <h2>Booking List (MTD)</h2>
+              <div class="desc">Daftar tamu check-in Month To Date</div>
+            </div>
+            <button class="btn primary sm" id="btnDownloadBookingList" style="padding:4px 8px;font-size:11px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:12px;height:12px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download Excel
+            </button>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="font-size:11px;font-weight:600;color:var(--blue-mid);display:block;margin-bottom:4px;">Pilih Bulan:</label>
+            <select id="bookingMonthDropdown" style="width:100%;padding:6px 10px;border:1px solid var(--gray-line);border-radius:7px;font-size:12px;font-weight:600;"></select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Nama Tamu</th>
+                  <th>Check In</th>
+                  <th>Kamar</th>
+                </tr>
+              </thead>
+              <tbody id="bookingListTable"></tbody>
+            </table>
+          </div>
+          <div class="empty" id="bookingListEmpty" style="display:none;padding:15px;">Tidak ada booking di bulan ini.</div>
+          <div id="bookingShowMoreWrap" style="margin-top:10px;text-align:center;display:none;">
+            <button class="btn ghost sm" id="btnShowMoreBooking" style="width:100%;justify-content:center;">Lihat Selengkapnya</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAGE: CASHFLOW -->
+    <section class="page" id="page-cashflow">
+      <div class="stat-row">
+        <div class="stat-card"><div class="lbl">Total Cash (MTD)</div><div class="stat-num" id="mtdCash">Rp0</div><div class="sub">bulan berjalan</div></div>
+        <div class="stat-card"><div class="lbl">Total Transfer (MTD)</div><div class="stat-num" id="mtdTransfer">Rp0</div><div class="sub">bulan berjalan</div></div>
+        <div class="stat-card"><div class="lbl">Total Cashflow (MTD)</div><div class="stat-num" id="mtdTotal">Rp0</div><div class="sub">gabungan cash & transfer</div></div>
+        <div class="stat-card"><div class="lbl">Status Pencatatan</div><div class="stat-num" style="font-size:14px;color:var(--ok-fg);">Otomatis</div><div class="sub">dari kamar terisi aktif</div></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Ringkasan Cashflow</h2><div class="desc" id="cfListDesc">Menampilkan data terisi otomatis dari Kamar Hari Ini</div></div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:4px;background:var(--blue-wash);padding:4px 8px;border-radius:8px;margin-right:8px;">
+              <span style="font-size:11px;font-weight:700;">Laporan:</span>
+              <input type="date" id="cfStartDate" style="padding:3px 6px;border:1px solid var(--gray-line);border-radius:4px;font-size:11px;">
+              <span style="font-size:11px;">s/d</span>
+              <input type="date" id="cfEndDate" style="padding:3px 6px;border:1px solid var(--gray-line);border-radius:4px;font-size:11px;">
+              <button class="btn primary sm" id="btnDownloadCF">Download CSV</button>
+            </div>
+            
+            <button class="btn sm" id="cfPrevDay">&laquo;</button>
+            <input type="date" id="cfFilterDate" style="padding:7px 9px;border:1px solid var(--gray-line);border-radius:7px;">
+            <button class="btn sm" id="cfNextDay">&raquo;</button>
+            <button class="btn sm" id="cfShowAll">Tampilkan Semua</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tanggal Check In</th><th>Kamar</th><th>Tamu</th><th>Metode</th><th>Catatan</th><th>Jumlah</th></tr></thead>
+            <tbody id="cashflowTable"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="cfEmpty" style="display:none;">Belum ada pemasukan tercatat dari terisi kamar.</div>
+        <div style="margin-top:12px;"><span class="total-pill" id="cfTotal">Total Filter: Rp0</span></div>
+      </div>
+    </section>
+
+    <!-- PAGE: ANALYTICS -->
+    <section class="page" id="page-analytics">
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Tren Penjualan Kamar (YTD)</h2><div class="desc">Volume jumlah hari kamar terjual per tipe kamar otomatis dari data Kamar Hari Ini (Year-To-Date)</div></div>
+          <div class="no-print" style="display:flex;gap:8px;">
+            <button class="btn sm" id="btnPrint">Print</button>
+            <button class="btn sm" id="btnDownload">Download Laporan</button>
+          </div>
+        </div>
+        <div class="chart-box"><canvas id="salesChart"></canvas></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div><h2>Tagihan Bulanan</h2><div class="desc">Indihome, PLN, PDAM & Pajak</div></div>
+          <div>
+            <!-- FILTER DROPDOWN HANYA TAMPILKAN BULAN PILIHAN -->
+            <select id="billFilterMonth" style="padding:6px 12px;border:1px solid var(--gray-line);border-radius:7px;font-size:12px;font-weight:600;">
+              <option value="ALL">-</option>
+            </select>
+          </div>
+        </div>
+        <form id="billForm" class="grid-3">
+          <div class="field"><label>Bulan</label><input type="month" id="billMonth" required></div>
+          <div class="field"><label>Kategori</label>
+            <select id="billCategory">
+              <option>INDIHOME THAYYIBA</option>
+              <option>PLN THAYYIBA</option>
+              <option>PDAM THAYYIBA</option>
+              <option>PAJAK THAYYIBA</option>
+            </select>
+          </div>
+          <div class="field"><label>Jumlah (Rp)</label><input type="number" id="billAmount" min="0" step="1000" required></div>
+          <div style="align-self:end;"><button type="submit" class="btn primary" style="width:100%;">Simpan Tagihan</button></div>
+        </form>
+        <div class="table-wrap" style="margin-top:14px;">
+          <table>
+            <thead><tr><th>Bulan</th><th>Kategori</th><th>Jumlah</th><th>Aksi</th></tr></thead>
+            <tbody id="billTable"></tbody>
+          </table>
+        </div>
+        <div class="empty" id="billEmpty" style="display:none;">Belum ada tagihan tercatat.</div>
+      </div>
+
+      <!-- GRAFIK TAGIHAN 3 BULAN TERAKHIR (BATANG SOFT) -->
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Grafik Perbandingan Tagihan (3 Bulan Terakhir)</h2>
+            <div class="desc" id="barChartTitleDesc">Perbandingan tagihan 3 Bulan Terakhir (Berdempetan Warna Soft)</div>
+          </div>
+          <button class="btn primary sm" id="btnOpenBillTab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Lihat Selengkapnya (Tab Baru)
+          </button>
+        </div>
+        <div class="chart-box small"><canvas id="bill3MonthBarChart"></canvas></div>
+      </div>
+
+      <!-- GRAFIK GARIS & PERSENTASE PERUBAHAN -->
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Tren & Persentase Kenaikan/Penurunan Tagihan</h2>
+            <div class="desc" id="lineChartTitleDesc">Kombinasi 4 item tagihan selama 3 bulan terakhir</div>
+          </div>
+        </div>
+        <div class="chart-box small"><canvas id="billLineChart"></canvas></div>
+        
+        <div style="margin-top:20px;">
+          <h3 style="font-size:13px;margin-bottom:8px;color:var(--blue-dark);">Rincian Perubahan Persentase Tagihan</h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr id="billPctHeader">
+                  <th>Item Tagihan</th>
+                  <th>Bulan 1</th>
+                  <th>Bulan 2</th>
+                  <th>Perubahan (Bulan 1-2)</th>
+                  <th>Bulan 3</th>
+                  <th>Perubahan (Bulan 2-3)</th>
+                </tr>
+              </thead>
+              <tbody id="billPctTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- MODAL: GUEST FORM -->
+<div class="overlay" id="guestModal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="guestModalTitle">Tambah Tamu</h3><button class="icon-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body uppercase-input">
+      <div class="field"><label>Nama Lengkap (Max 20 Karakter)</label><input type="text" id="gName" maxlength="20" placeholder="NAMA TAMU"></div>
+      <div class="grid-2">
+        <div class="field"><label>Nomor HP</label><input type="text" id="gPhone" placeholder="08XXXXXXXXXX"></div>
+        <div class="field"><label>Asal Daerah</label><input type="text" id="gRegion" placeholder="MIS. BANDA ACEH"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Status Perkawinan</label>
+          <select id="gMarital"><option value="SINGLE">SINGLE</option><option value="MENIKAH">MENIKAH</option></select>
+        </div>
+        <div class="field"><label>Nomor Kendaraan</label><input type="text" id="gPlate" placeholder="MIS. BL 1234 AB"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Tier Pelanggan</label>
+          <select id="gTier">
+            <option value="">Otomatis (berdasar volume hari inap)</option>
+            <option value="vvip">vvip (≥ 20 Hari)</option>
+            <option value="vip1">vip1 (15 - 19 Hari)</option>
+            <option value="vip2">vip2 (10 - 14 Hari)</option>
+            <option value="reguler">reguler (5 - 9 Hari)</option>
+            <option value="new">new (1 - 4 Hari)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Status Blacklist</label>
+          <select id="gBlacklist">
+            <option value="false">TIDAK (NORMAL)</option>
+            <option value="true">YA (BLACKLIST)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Batal</button>
+      <button class="btn primary" id="gSave">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: GUEST DETAIL & RIWAYAT -->
+<div class="overlay" id="guestDetailModal">
+  <div class="modal">
+    <div class="modal-head"><h3>Detail Tamu Lengkap</h3><button class="icon-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body" id="guestDetailBody"></div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ROOM ACTION -->
+<div class="overlay" id="roomModal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="roomModalTitle">Kamar</h3><button class="icon-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body uppercase-input" id="roomModalBody"></div>
+    <div class="modal-foot" id="roomModalFoot"></div>
+  </div>
+</div>
+
+<!-- MODAL: PINDAHKAN KAMAR -->
+<div class="overlay" id="moveRoomModal">
+  <div class="modal">
+    <div class="modal-head"><h3>Pindahkan Kamar</h3><button class="icon-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Pilih Kamar Tujuan yang Tersedia</label>
+        <select id="moveRoomTargetSelect"></select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Batal</button>
+      <button class="btn primary" id="btnConfirmMoveRoom">Proses Pindah Kamar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: MANUAL EDIT STAY HISTORY -->
+<div class="overlay" id="editStayModal">
+  <div class="modal">
+    <div class="modal-head"><h3>Edit Riwayat Inap</h3><button class="icon-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <div class="modal-body">
+      <div class="grid-2">
+        <div class="field"><label>Tanggal Check-in</label><input type="date" id="esCheckin"></div>
+        <div class="field"><label>Tanggal Check-out</label><input type="date" id="esCheckout"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Kamar</label><select id="esRoom"></select></div>
+        <div class="field"><label>Jumlah Tamu</label><input type="number" id="esGuestCount" min="1" value="1"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Batal</button>
+      <button class="btn primary" id="esSave">Simpan Perubahan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: POPUP BILL HOTEL PROFESIONAL DENGAN FITUR DOWNLOAD PDF -->
+<div class="overlay" id="billModal">
+  <div class="modal" style="max-width:650px;">
+    <div class="modal-head">
+      <h3>Tagihan & Bukti Pembayaran Hotel</h3>
+      <button class="icon-x" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body" style="background:#F4F7FA;padding:20px;">
+      
+      <!-- ELEMEN TEMPLATE BILL YANG DILAYOUT SECARA PROFESIONAL DAN AKAN DI-CONVERT JADI PDF -->
+      <div id="hotelBillContainer" class="hotel-bill-card">
+        <div class="bill-header">
+          <div>
+            <div class="bill-brand-title">Hotel Thayyiba</div>
+            <div class="bill-brand-sub">Layanan Penginapan Nyaman & Profesional</div>
+          </div>
+          <div class="bill-title-tag">
+            <h2>OFFICIAL BILL</h2>
+            <div style="font-size:11px;color:#8FA4B6;font-weight:700;" id="popBillNo">NO: BILL-0000</div>
+          </div>
+        </div>
+
+        <div class="bill-grid-info">
+          <div class="bill-info-item">
+            <label>Nama Tamu</label>
+            <div id="popGuestName">-</div>
+          </div>
+          <div class="bill-info-item">
+            <label>Nomor Kamar</label>
+            <div id="popRoomNum">-</div>
+          </div>
+          <div class="bill-info-item">
+            <label>Tanggal Check-In</label>
+            <div id="popCheckIn">-</div>
+          </div>
+          <div class="bill-info-item">
+            <label>Tanggal Check-Out</label>
+            <div id="popCheckOut">-</div>
+          </div>
+        </div>
+
+        <table class="bill-table-custom">
+          <thead>
+            <tr>
+              <th>Deskripsi Rincian</th>
+              <th style="text-align:center;">Lama Inap</th>
+              <th style="text-align:right;">Harga / Malam</th>
+              <th style="text-align:right;">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <b id="popRoomCatLabel">Sewa Kamar Hotel</b><br>
+                <small style="color:#8FA4B6;" id="popRoomDetailSub">Kategori Standard</small>
+              </td>
+              <td style="text-align:center;" id="popDuration">1 Malam</td>
+              <td style="text-align:right;" id="popRatePerNight">Rp0</td>
+              <td style="text-align:right;font-weight:700;" id="popSubtotal">Rp0</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:15px;background:#E3F1FB;padding:12px 16px;border-radius:8px;">
+          <div>
+            <span style="font-size:11px;font-weight:700;color:#2C7CB8;text-transform:uppercase;display:block;">Status Pembayaran</span>
+            <select id="popPaymentStatus" style="border:1px solid #2C7CB8;border-radius:6px;padding:4px 8px;font-weight:800;color:#123A5C;background:#fff;cursor:pointer;">
+              <option value="LUNAS">LUNAS</option>
+              <option value="BELUM LUNAS">BELUM LUNAS</option>
+            </select>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:11px;font-weight:700;color:#8FA4B6;text-transform:uppercase;display:block;">Total Tagihan</span>
+            <span style="font-size:20px;font-weight:800;color:#123A5C;" id="popGrandTotal">Rp0</span>
+          </div>
+        </div>
+
+        <div class="bill-footer-sign">
+          <div style="font-size:10.5px;color:#8FA4B6;max-width:260px;">
+            Terima kasih telah menginap di Hotel Thayyiba.<br>Simpan bukti pembayaran ini sebagai konfirmasi resmi.
+          </div>
+          <div class="bill-sign-box">
+            <div style="font-size:11px;font-weight:700;color:#123A5C;">Resepsionis</div>
+            <div class="bill-sign-line"></div>
+            <div style="font-size:11px;color:#8FA4B6;font-style:italic;">( Nama & TTD )</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close>Tutup</button>
+      <button class="btn primary" id="btnDownloadBillPDF">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* DATA LAYER */
+const LS_KEYS = {
+  guests:'thayyiba_guests', stays:'thayyiba_stays',
+  bills:'thayyiba_bills', prices:'thayyiba_prices'
+};
+const ROOM_CATEGORIES = [
+  { key:'standard1', label:'STANDARD 1', rooms:[201,202,203,204,205,206,207,208,209,210,211,212,214] },
+  { key:'standard2', label:'STANDARD 2', rooms:[104,106,107,108,109,110,112] },
+  { key:'family',    label:'FAMILY ROOM', rooms:[101,103,105,213,215] }
+];
+
+function roomCategoryOf(room){
+  room = Number(room);
+  return ROOM_CATEGORIES.find(c=>c.rooms.includes(room));
+}
+function load(key, fallback){
+  try{ const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch(e){ return fallback; }
+}
+function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+// Default Sample Stays untuk YTD jika belum ada di localStorage
+const curYr = new Date().getFullYear();
+let defaultStays = [
+  { id:'s1', guestId:'g1', guestName:'AHMAD', room:201, category:'standard1', checkIn:`${curYr}-01-10`, checkOut:`${curYr}-01-15`, guestCount:2, paymentMethod:'Cash', amount:1000000, status:'checked_out' },
+  { id:'s2', guestId:'g2', guestName:'BUDI', room:104, category:'standard2', checkIn:`${curYr}-01-12`, checkOut:`${curYr}-01-18`, guestCount:1, paymentMethod:'Transfer', amount:1500000, status:'checked_out' },
+  { id:'s3', guestId:'g3', guestName:'SITI', room:101, category:'family', checkIn:`${curYr}-02-05`, checkOut:`${curYr}-02-10`, guestCount:3, paymentMethod:'Cash', amount:1500000, status:'checked_out' },
+  { id:'s4', guestId:'g1', guestName:'AHMAD', room:202, category:'standard1', checkIn:`${curYr}-02-15`, checkOut:`${curYr}-02-22`, guestCount:2, paymentMethod:'Cash', amount:1400000, status:'checked_out' },
+  { id:'s5', guestId:'g4', guestName:'DONI', room:106, category:'standard2', checkIn:`${curYr}-03-01`, checkOut:`${curYr}-03-08`, guestCount:2, paymentMethod:'Transfer', amount:1750000, status:'checked_out' },
+  { id:'s6', guestId:'g5', guestName:'EKA', room:213, category:'family', checkIn:`${curYr}-03-10`, checkOut:`${curYr}-03-18`, guestCount:4, paymentMethod:'Cash', amount:2400000, status:'checked_out' }
+];
+
+let guests = load(LS_KEYS.guests, [
+  { id:'g1', name:'AHMAD', phone:'08123456789', region:'BANDA ACEH', marital:'MENIKAH', plate:'BL 1234 AB', tierOverride:null, isBlacklisted:false },
+  { id:'g2', name:'BUDI', phone:'08234567890', region:'MEDAN', marital:'SINGLE', plate:'BK 5678 CD', tierOverride:null, isBlacklisted:false }
+]);
+let stays = load(LS_KEYS.stays, defaultStays);
+
+let defaultBills = [
+  { id:'b1', month:'2026-08', category:'INDIHOME THAYYIBA', amount:450000 },
+  { id:'b2', month:'2026-08', category:'PLN THAYYIBA', amount:2800000 },
+  { id:'b3', month:'2026-08', category:'PDAM THAYYIBA', amount:650000 },
+  { id:'b4', month:'2026-08', category:'PAJAK THAYYIBA', amount:1200000 },
+  { id:'b5', month:'2026-09', category:'INDIHOME THAYYIBA', amount:450000 },
+  { id:'b6', month:'2026-09', category:'PLN THAYYIBA', amount:3100000 },
+  { id:'b7', month:'2026-09', category:'PDAM THAYYIBA', amount:600000 },
+  { id:'b8', month:'2026-09', category:'PAJAK THAYYIBA', amount:1350000 },
+  { id:'b9', month:'2026-10', category:'INDIHOME THAYYIBA', amount:480000 },
+  { id:'b10', month:'2026-10', category:'PLN THAYYIBA', amount:2950000 },
+  { id:'b11', month:'2026-10', category:'PDAM THAYYIBA', amount:720000 },
+  { id:'b12', month:'2026-10', category:'PAJAK THAYYIBA', amount:1300000 }
+];
+let bills = load(LS_KEYS.bills, defaultBills);
+let prices = load(LS_KEYS.prices, { standard1:200000, standard2:250000, family:300000 });
+
+function persistAll(){
+  save(LS_KEYS.guests, guests);
+  save(LS_KEYS.stays, stays);
+  save(LS_KEYS.bills, bills);
+  save(LS_KEYS.prices, prices);
+}
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function todayISO(){ const d=new Date(); return d.toISOString().slice(0,10); }
+function fmtDate(iso){
+  if(!iso) return '-';
+  const d=new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
+}
+function fmtMoney(n){
+  n = Number(n)||0;
+  return 'Rp' + n.toLocaleString('id-ID');
+}
+
+function calcDays(checkIn, checkOut){
+  if(!checkIn || !checkOut) return 1;
+  const d1 = new Date(checkIn);
+  const d2 = new Date(checkOut);
+  const diffTime = Math.abs(d2 - d1);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays > 0 ? diffDays : 1;
+}
+
+/* TIER LOGIC */
+function guestStays(guestId){
+  return stays.filter(s => s.guestId === guestId && s.status !== 'unchecked_in');
+}
+function stayCount(g){ return guestStays(g.id).length; }
+
+function totalStayDays(g){
+  const gStays = guestStays(g.id);
+  return gStays.reduce((sum, s) => sum + calcDays(s.checkIn, s.checkOut), 0);
+}
+
+function autoTier(g){
+  const days = totalStayDays(g);
+  if(days >= 20) return 'vvip';
+  if(days >= 15) return 'vip1';
+  if(days >= 10) return 'vip2';
+  if(days >= 5)  return 'reguler';
+  return 'new';
+}
+
+function effectiveTier(g){ 
+  const t = g.tierOverride || autoTier(g);
+  return t.toLowerCase();
+}
+
+function tierBadge(g){
+  const t = effectiveTier(g);
+  const manual = !!g.tierOverride;
+  return `<span class="badge ${t}${manual?' manual':''}">${t.toUpperCase()}</span>`;
+}
+
+/* NAVIGATION */
+const pageMeta = {
+  rooms:{ title:'Kamar Terisi Hari Ini', sub:'Status kamar realtime' },
+  guests:{ title:'Data Tamu', sub:'Database tamu hotel' },
+  cashflow:{ title:'Cashflow Harian', sub:'Pencatatan pemasukan harian' },
+  analytics:{ title:'Analitik & Laporan', sub:'Tren penjualan & tagihan' }
+};
+function goPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('page-'+id).classList.add('print-target');
+  document.querySelectorAll('.page').forEach(p=>{ if(p.id!=='page-'+id) p.classList.remove('print-target'); });
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.page===id));
+  document.getElementById('pageTitle').textContent = pageMeta[id].title;
+  document.getElementById('pageSub').textContent = pageMeta[id].sub;
+  if(id==='rooms') renderRooms();
+  if(id==='guests') renderGuests();
+  if(id==='cashflow') renderCashflow();
+  if(id==='analytics') renderAnalytics();
+}
+document.getElementById('nav').addEventListener('click', e=>{
+  const btn = e.target.closest('.nav-item'); if(!btn) return;
+  document.getElementById('sidebar').classList.remove('collapsed');
+  goPage(btn.dataset.page);
+});
+document.getElementById('collapseBtn').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+});
+
+/* CLOCK */
+function tickClock(){
+  const d = new Date();
+  document.getElementById('clockDate').textContent = d.toLocaleDateString('id-ID',{weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+  document.getElementById('clockTime').textContent = d.toLocaleTimeString('id-ID');
+}
+setInterval(tickClock,1000); tickClock();
+
+/* ROOMS PAGE */
+let selectedRoomDate = todayISO();
+document.getElementById('roomViewDate').value = selectedRoomDate;
+
+document.getElementById('roomViewDate').addEventListener('change', e=>{
+  selectedRoomDate = e.target.value || todayISO();
+  renderRooms();
+  renderCashflow();
+});
+document.getElementById('btnPrevDay').addEventListener('click', ()=>{
+  const d = new Date(selectedRoomDate); d.setDate(d.getDate() - 1);
+  selectedRoomDate = d.toISOString().slice(0,10);
+  document.getElementById('roomViewDate').value = selectedRoomDate;
+  renderRooms();
+  renderCashflow();
+});
+document.getElementById('btnNextDay').addEventListener('click', ()=>{
+  const d = new Date(selectedRoomDate); d.setDate(d.getDate() + 1);
+  selectedRoomDate = d.toISOString().slice(0,10);
+  document.getElementById('roomViewDate').value = selectedRoomDate;
+  renderRooms();
+  renderCashflow();
+});
+document.getElementById('btnToday').addEventListener('click', ()=>{
+  selectedRoomDate = todayISO();
+  document.getElementById('roomViewDate').value = selectedRoomDate;
+  renderRooms();
+  renderCashflow();
+});
+
+function getRoomStatusOnDate(roomNumber, dateStr){
+  const activeStay = stays.find(s => 
+    s.room === roomNumber && 
+    s.checkIn <= dateStr && 
+    s.checkOut > dateStr && 
+    s.status === 'active'
+  );
+  if(activeStay) return { type:'occ', stay:activeStay };
+
+  const checkedOutStay = stays.find(s =>
+    s.room === roomNumber &&
+    s.checkOut === dateStr &&
+    s.status === 'checked_out'
+  );
+  if(checkedOutStay) return { type:'checked_out', stay:checkedOutStay };
+
+  return { type:'avail' };
+}
+
+function renderRooms(){
+  const wrap = document.getElementById('roomCategories');
+  wrap.innerHTML = '';
+  let totalRooms=0, occRooms=0, checkedOutCount=0;
+
+  ROOM_CATEGORIES.forEach(cat=>{
+    totalRooms += cat.rooms.length;
+    const catDiv = document.createElement('div');
+    catDiv.className='room-cat';
+    
+    const verticalList = cat.rooms.map(num=>{
+      const statObj = getRoomStatusOnDate(num, selectedRoomDate);
+      let cls = '', statusBadgeHtml = '<div class="room-stat-badge avail">tersedia</div>';
+      let guestName = '', marital = '', guestCount = '', priceTxt = '', payMethod = '';
+      let tierBadgeHtml = '';
+
+      if(statObj.type === 'occ' || statObj.type === 'checked_out'){
+        if(statObj.type === 'occ'){
+          occRooms++;
+          cls = 'occ';
+          statusBadgeHtml = `<div class="room-stat-badge terisi">terisi</div>`;
+        } else {
+          checkedOutCount++;
+          cls = 'checked-out-card';
+          statusBadgeHtml = `<div class="room-stat-badge checkedout">check out</div>`;
+        }
+
+        const g = guests.find(x=>x.id===statObj.stay.guestId);
+        tierBadgeHtml = g ? tierBadge(g) : '<span class="badge new">NEW</span>';
+        
+        guestName = `<div style="display:flex;align-items:center;gap:6px;"><b>${(statObj.stay.guestName || 'TAMU').slice(0, 20)}</b> ${tierBadgeHtml}</div>`;
+        marital = g ? g.marital : '-';
+        guestCount = (statObj.stay.guestCount || 1) + ' orang';
+        priceTxt = fmtMoney(statObj.stay.amount);
+        payMethod = statObj.stay.paymentMethod || 'Cash';
+      }
+
+      return `<div class="room-row-card ${cls}" data-room="${num}">
+        <div class="num">${num}</div>
+        <div>${statusBadgeHtml}</div>
+        <div class="g-col">${guestName || '<b>-</b>'}</div>
+        <div class="g-col sub-col">${marital || '-'}</div>
+        <div class="g-col sub-col">${guestCount || '-'}</div>
+        <div class="price-col">
+          <div class="price-tag">${priceTxt}</div>
+          ${payMethod ? `<span class="pay-sub">${payMethod}</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    catDiv.innerHTML = `
+      <div class="room-cat-title"><h3>${cat.label}</h3><span class="count">${cat.rooms.length} kamar</span></div>
+      <div class="room-list-vertical">${verticalList}</div>`;
+    wrap.appendChild(catDiv);
+  });
+
+  const occPct = totalRooms > 0 ? Math.round((occRooms / totalRooms) * 100) : 0;
+
+  document.getElementById('stTotal').textContent = totalRooms;
+  document.getElementById('stOcc').textContent = occRooms;
+  document.getElementById('stOccPct').textContent = `(${occPct}%)`;
+  document.getElementById('stAvail').textContent = totalRooms - occRooms - checkedOutCount;
+  document.getElementById('stCheckedOut').textContent = checkedOutCount;
+}
+
+document.getElementById('roomCategories').addEventListener('click', e=>{
+  const card = e.target.closest('.room-row-card'); if(!card) return;
+  openRoomModal(Number(card.dataset.room));
+});
+
+let currentStayIdForMove = null;
+
+function openRoomModal(room){
+  const cat = roomCategoryOf(room);
+  const statObj = getRoomStatusOnDate(room, selectedRoomDate);
+  const title = document.getElementById('roomModalTitle');
+  const body = document.getElementById('roomModalBody');
+  const foot = document.getElementById('roomModalFoot');
+  title.textContent = `Kamar ${room} — ${cat.label} (${fmtDate(selectedRoomDate)})`;
+
+  if(statObj.type === 'occ' || statObj.type === 'checked_out'){
+    const s = statObj.stay;
+    const g = guests.find(x=>x.id===s.guestId);
+    const duration = calcDays(s.checkIn, s.checkOut);
+
+    body.innerHTML = `
+      <div class="field">
+        <label>Nama Tamu (Max 20 Karakter)</label>
+        <input type="text" id="rmEditGuestName" maxlength="20" value="${(s.guestName||'').toUpperCase()}">
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Nomor HP</label><input type="text" id="rmEditPhone" value="${g ? g.phone : ''}"></div>
+        <div class="field"><label>Asal Daerah</label><input type="text" id="rmEditRegion" value="${g ? (g.region||'').toUpperCase() : ''}"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Status Perkawinan</label>
+          <select id="rmEditMarital">
+            <option value="SINGLE" ${g && g.marital==='SINGLE'?'selected':''}>SINGLE</option>
+            <option value="MENIKAH" ${g && g.marital==='MENIKAH'?'selected':''}>MENIKAH</option>
+          </select>
+        </div>
+        <div class="field"><label>Nomor Kendaraan</label><input type="text" id="rmEditPlate" value="${g ? (g.plate||'').toUpperCase() : ''}"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Tanggal Check-in</label><input type="date" id="rmEditCheckIn" value="${s.checkIn}"></div>
+        <div class="field"><label>Tanggal Check-out</label><input type="date" id="rmEditCheckOut" value="${s.checkOut}"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Lama Inap (Hari)</label><input type="number" id="rmEditDuration" min="1" value="${duration}"></div>
+        <div class="field"><label>Jumlah Tamu Menginap</label><input type="number" id="rmEditGuestCount" min="1" value="${s.guestCount || 1}"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label>Metode Pembayaran</label>
+          <select id="rmEditPayMethod">
+            <option value="Cash" ${s.paymentMethod==='Cash'?'selected':''}>Cash</option>
+            <option value="Transfer" ${s.paymentMethod==='Transfer'?'selected':''}>Transfer</option>
+            <option value="Prepaid" ${s.paymentMethod==='Prepaid'?'selected':''}>Prepaid</option>
+          </select>
+        </div>
+        <div class="field"><label>Nominal Pembayaran (Rp)</label><input type="number" id="rmEditAmount" value="${s.amount}"></div>
+      </div>`;
+    
+    let footBtns = `<button class="btn primary" id="rmSaveEditBtn">Simpan Edit</button>`;
+    
+    if(statObj.type === 'occ'){
+      footBtns += `<button class="btn warning" id="rmMoveBtn">Pindahkan Kamar</button>`;
+      footBtns += `<button class="btn danger" id="rmUncheckInBtn">Uncheck In</button>`;
+      footBtns += `<button class="btn danger" id="checkoutBtn">Check Out</button>`;
+    } else if(statObj.type === 'checked_out') {
+      footBtns += `<button class="btn warning" id="unCheckoutBtn">Uncheck Out</button>`;
+    }
+
+    footBtns += `<button class="btn" id="rmCloseBtn">Tutup</button>`;
+    foot.innerHTML = footBtns;
+
+    document.getElementById('rmCloseBtn').onclick = () => closeModal('roomModal');
+
+    const editCheckIn = document.getElementById('rmEditCheckIn');
+    const editCheckOut = document.getElementById('rmEditCheckOut');
+    const editDuration = document.getElementById('rmEditDuration');
+
+    editDuration.addEventListener('input', () => {
+      const days = Number(editDuration.value) || 1;
+      const d = new Date(editCheckIn.value);
+      d.setDate(d.getDate() + days);
+      editCheckOut.value = d.toISOString().slice(0,10);
+    });
+    editCheckOut.addEventListener('change', () => {
+      editDuration.value = calcDays(editCheckIn.value, editCheckOut.value);
+    });
+
+    document.getElementById('rmSaveEditBtn').onclick = () => {
+      s.guestName = document.getElementById('rmEditGuestName').value.trim().toUpperCase().slice(0,20);
+      s.checkIn = editCheckIn.value;
+      s.checkOut = editCheckOut.value;
+      s.guestCount = Number(document.getElementById('rmEditGuestCount').value) || 1;
+      s.paymentMethod = document.getElementById('rmEditPayMethod').value;
+      s.amount = Number(document.getElementById('rmEditAmount').value) || 0;
+
+      if(g){
+        g.name = s.guestName;
+        g.phone = document.getElementById('rmEditPhone').value.trim().toUpperCase();
+        g.region = document.getElementById('rmEditRegion').value.trim().toUpperCase();
+        g.marital = document.getElementById('rmEditMarital').value;
+        g.plate = document.getElementById('rmEditPlate').value.trim().toUpperCase();
+      }
+      persistAll(); renderRooms(); renderCashflow(); renderBookingList(); closeModal('roomModal');
+    };
+
+    if(statObj.type === 'occ'){
+      document.getElementById('rmMoveBtn').onclick = () => {
+        currentStayIdForMove = s.id;
+        openMoveRoomModal(room);
+      };
+
+      document.getElementById('rmUncheckInBtn').onclick = () => {
+        if(confirm('Lakukan Uncheck In? Status kamar akan dikosongkan, riwayat menginap ini dan pencatatan cashflow-nya akan dibatalkan/dihapus, namun data profil tamu tetap tersimpan.')){
+          s.status = 'unchecked_in';
+          persistAll(); renderRooms(); renderGuests(); renderCashflow(); renderBookingList(); closeModal('roomModal');
+        }
+      };
+
+      document.getElementById('checkoutBtn').onclick = ()=>{
+        s.originalCheckOut = s.checkOut;
+        s.status = 'checked_out';
+        s.checkOut = selectedRoomDate;
+        persistAll(); renderRooms(); renderGuests(); renderCashflow(); renderBookingList(); closeModal('roomModal');
+      };
+    }
+
+    if(statObj.type === 'checked_out' && document.getElementById('unCheckoutBtn')){
+      document.getElementById('unCheckoutBtn').onclick = () => {
+        if(confirm('Batalkan status Check Out? Tamu akan dikembalikan ke status Terisi Aktif di kamar ini.')){
+          s.status = 'active';
+          if(s.originalCheckOut && s.originalCheckOut > selectedRoomDate){
+            s.checkOut = s.originalCheckOut;
+          } else {
+            const nextDay = new Date(selectedRoomDate);
+            nextDay.setDate(nextDay.getDate() + 1);
+            s.checkOut = nextDay.toISOString().slice(0,10);
+          }
+
+          persistAll(); renderRooms(); renderGuests(); renderCashflow(); renderBookingList(); closeModal('roomModal');
+        }
+      };
+    }
+
+  } else {
+    body.innerHTML = `
+      <div class="radio-row">
+        <label><input type="radio" name="assignMode" value="search" checked> Cari Data Tamu</label>
+        <label><input type="radio" name="assignMode" value="new"> Tamu Baru</label>
+      </div>
+
+      <div id="sectionSearchGuest" style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+        <div class="field search-wrap" style="max-width:100%;">
+          <label>Cari Nama / HP Tamu</label>
+          <input type="text" id="rmGuestSearch" placeholder="KETIK NAMA ATAU NOMOR HP..." autocomplete="off">
+          <div class="suggest" id="rmGuestSuggest"></div>
+        </div>
+        <input type="hidden" id="rmSelectedGuestId">
+        <div id="rmSelectedGuestInfo" style="padding:8px 12px;background:var(--blue-wash);border-radius:8px;font-weight:600;display:none;"></div>
+      </div>
+
+      <div id="sectionNewGuest" style="display:none;flex-direction:column;gap:10px;margin-top:8px;">
+        <div class="field"><label>Nama Lengkap (Max 20 Karakter)</label><input type="text" id="rmNewName" maxlength="20" placeholder="NAMA TAMU BARU"></div>
+        <div class="grid-2">
+          <div class="field"><label>Nomor HP</label><input type="text" id="rmNewPhone" placeholder="08XXXXXXXXXX"></div>
+          <div class="field"><label>Asal Daerah</label><input type="text" id="rmNewRegion" placeholder="KOTA/KAB"></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>Status Perkawinan</label><select id="rmNewMarital"><option value="SINGLE">SINGLE</option><option value="MENIKAH">MENIKAH</option></select></div>
+          <div class="field"><label>Nomor Kendaraan</label><input type="text" id="rmNewPlate" placeholder="PLAT NOMOR"></div>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--gray-line);margin:10px 0;">
+
+      <div class="grid-2">
+        <div class="field"><label>Tanggal Check-in</label><input type="date" id="rmCheckin" value="${selectedRoomDate}"></div>
+        <div class="field"><label>Tanggal Check-out</label><input type="date" id="rmCheckout" value="${selectedRoomDate}"></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field"><label>Lama Inap (Hari)</label><input type="number" id="rmDuration" min="1" value="1"></div>
+        <div class="field"><label>Jumlah Tamu Menginap</label><input type="number" id="rmGuestCount" min="1" value="1"></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field"><label>Metode Pembayaran</label>
+          <select id="rmPayMethod">
+            <option value="Cash">Cash</option>
+            <option value="Transfer">Transfer</option>
+            <option value="Prepaid">Prepaid</option>
+          </select>
+        </div>
+        <div class="field" id="rmAmountField"><label>Harga Kamar (Rp)</label><input type="number" id="rmAmount" value="${prices[cat.key]}"></div>
+      </div>`;
+
+    foot.innerHTML = `<button class="btn primary" id="assignBtn">Simpan & Check In</button><button class="btn" id="rmCloseBtn">Tutup</button>`;
+
+    document.getElementById('rmCloseBtn').onclick = () => closeModal('roomModal');
+
+    body.querySelectorAll('input[type="text"]').forEach(inp => {
+      inp.addEventListener('input', () => { inp.value = inp.value.toUpperCase(); });
+    });
+
+    const checkinInp = document.getElementById('rmCheckin');
+    const checkoutInp = document.getElementById('rmCheckout');
+    const durationInp = document.getElementById('rmDuration');
+
+    const defaultOut = new Date(selectedRoomDate);
+    defaultOut.setDate(defaultOut.getDate() + 1);
+    checkoutInp.value = defaultOut.toISOString().slice(0,10);
+
+    function updateDuration(){
+      const days = calcDays(checkinInp.value, checkoutInp.value);
+      durationInp.value = days;
+    }
+    checkinInp.addEventListener('change', ()=>{
+      const d = new Date(checkinInp.value);
+      d.setDate(d.getDate() + Number(durationInp.value));
+      checkoutInp.value = d.toISOString().slice(0,10);
+    });
+    checkoutInp.addEventListener('change', updateDuration);
+    durationInp.addEventListener('input', ()=>{
+      const days = Number(durationInp.value) || 1;
+      const d = new Date(checkinInp.value);
+      d.setDate(d.getDate() + days);
+      checkoutInp.value = d.toISOString().slice(0,10);
+    });
+
+    body.querySelectorAll('input[name="assignMode"]').forEach(r=>{
+      r.addEventListener('change', ()=>{
+        const isSearch = body.querySelector('input[value="search"]').checked;
+        document.getElementById('sectionSearchGuest').style.display = isSearch?'flex':'none';
+        document.getElementById('sectionNewGuest').style.display = isSearch?'none':'flex';
+      });
+    });
+
+    const paySel = document.getElementById('rmPayMethod');
+    paySel.addEventListener('change', ()=>{
+      document.getElementById('rmAmountField').style.display = paySel.value==='Prepaid' ? 'none' : 'flex';
+    });
+
+    const searchInp = document.getElementById('rmGuestSearch');
+    const suggestEl = document.getElementById('rmGuestSuggest');
+    searchInp.addEventListener('input', ()=>{
+      const q = searchInp.value.trim().toLowerCase();
+      if(!q){ suggestEl.classList.remove('show'); return; }
+      const matches = guests.filter(g=>(g.name||'').toLowerCase().includes(q)||(g.phone||'').toLowerCase().includes(q)).slice(0,5);
+      if(!matches.length){ suggestEl.classList.remove('show'); return; }
+      suggestEl.innerHTML = matches.map(g=>`<div class="suggest-item" data-selectguest="${g.id}"><b>${g.name.toUpperCase()}</b><span>${g.phone||'-'}</span></div>`).join('');
+      suggestEl.classList.add('show');
+    });
+
+    suggestEl.addEventListener('click', e=>{
+      const item = e.target.closest('[data-selectguest]'); if(!item) return;
+      const g = guests.find(x=>x.id===item.dataset.selectguest);
+      
+      if(g.isBlacklisted){
+        alert('PERHATIAN: Tamu ini masuk dalam daftar BLACKLIST!');
+      }
+
+      document.getElementById('rmSelectedGuestId').value = g.id;
+      document.getElementById('rmSelectedGuestInfo').style.display = 'block';
+      document.getElementById('rmSelectedGuestInfo').textContent = `Tamu Terpilih: ${g.name.toUpperCase()} (${g.phone||'-'}) ${g.isBlacklisted ? '[BLACKLIST]' : ''}`;
+      suggestEl.classList.remove('show');
+      searchInp.value = g.name.toUpperCase();
+    });
+
+    document.getElementById('assignBtn').onclick = ()=>{
+      const mode = body.querySelector('input[name="assignMode"]:checked').value;
+      let guestId = null, guestName = '';
+
+      if(mode === 'search'){
+        guestId = document.getElementById('rmSelectedGuestId').value;
+        if(!guestId){ alert('Silakan pilih tamu dari hasil pencarian.'); return; }
+        guestName = guests.find(x=>x.id===guestId).name.toUpperCase().slice(0,20);
+      } else {
+        guestName = document.getElementById('rmNewName').value.trim().toUpperCase().slice(0,20);
+        if(!guestName){ alert('Isi nama tamu baru.'); return; }
+        
+        const newG = {
+          id: uid(),
+          name: guestName,
+          phone: document.getElementById('rmNewPhone').value.trim().toUpperCase(),
+          region: document.getElementById('rmNewRegion').value.trim().toUpperCase(),
+          marital: document.getElementById('rmNewMarital').value.toUpperCase(),
+          plate: document.getElementById('rmNewPlate').value.trim().toUpperCase(),
+          tierOverride: null,
+          isBlacklisted: false
+        };
+        guests.push(newG);
+        guestId = newG.id;
+      }
+
+      const checkIn = document.getElementById('rmCheckin').value;
+      const checkOut = document.getElementById('rmCheckout').value;
+      const method = document.getElementById('rmPayMethod').value;
+      const amount = method === 'Prepaid' ? 0 : Number(document.getElementById('rmAmount').value)||0;
+      const guestCount = Number(document.getElementById('rmGuestCount').value)||1;
+
+      stays.push({
+        id: uid(),
+        guestId,
+        guestName,
+        room,
+        category: cat.key,
+        checkIn,
+        checkOut,
+        guestCount,
+        paymentMethod: method,
+        amount,
+        status: 'active'
+      });
+
+      persistAll();
+      renderRooms();
+      renderGuests();
+      renderCashflow();
+      renderBookingList();
+      closeModal('roomModal');
+    };
+  }
+
+  openModal('roomModal');
+}
+
+function openMoveRoomModal(currentRoomNumber){
+  const select = document.getElementById('moveRoomTargetSelect');
+  select.innerHTML = '';
+  
+  ROOM_CATEGORIES.forEach(cat => {
+    const availableRoomsInCat = cat.rooms.filter(r => {
+      const st = getRoomStatusOnDate(r, selectedRoomDate);
+      return st.type === 'avail' && r !== currentRoomNumber;
+    });
+
+    if(availableRoomsInCat.length > 0){
+      const group = document.createElement('optgroup');
+      group.label = cat.label;
+      availableRoomsInCat.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r;
+        opt.textContent = `Kamar ${r}`;
+        group.appendChild(opt);
+      });
+      select.appendChild(group);
+    }
+  });
+
+  if(select.children.length === 0){
+    select.innerHTML = '<option value="">Tidak ada kamar lain yang tersedia</option>';
+    document.getElementById('btnConfirmMoveRoom').disabled = true;
+  } else {
+    document.getElementById('btnConfirmMoveRoom').disabled = false;
+  }
+
+  openModal('moveRoomModal');
+}
+
+document.getElementById('btnConfirmMoveRoom').onclick = () => {
+  const targetRoom = Number(document.getElementById('moveRoomTargetSelect').value);
+  if(!targetRoom) return;
+
+  const s = stays.find(x => x.id === currentStayIdForMove);
+  if(s){
+    s.room = targetRoom;
+    s.category = roomCategoryOf(targetRoom).key;
+    persistAll();
+    renderRooms();
+    renderCashflow();
+    renderBookingList();
+    closeModal('moveRoomModal');
+    closeModal('roomModal');
+  }
+};
+
+/* GUESTS PAGE & BOOKING LIST LOGIC */
+let currentGuestTab = 'dataTamu';
+let bookingListLimit = 10;
+let currentBillStay = null;
+
+document.getElementById('tabDataTamu').addEventListener('click', () => setGuestTab('dataTamu'));
+document.getElementById('tabTop10').addEventListener('click', () => setGuestTab('top10'));
+document.getElementById('tabBlacklist').addEventListener('click', () => setGuestTab('blacklist'));
+
+function setGuestTab(tabName){
+  currentGuestTab = tabName;
+  document.getElementById('tabDataTamu').classList.toggle('active', tabName === 'dataTamu');
+  document.getElementById('tabTop10').classList.toggle('active', tabName === 'top10');
+  document.getElementById('tabBlacklist').classList.toggle('active', tabName === 'blacklist');
+  renderGuests(document.getElementById('guestSearch').value);
+}
+
+function renderGuests(filterText){
+  const tbody = document.getElementById('guestTable');
+  let list = guests.slice();
+
+  list.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+
+  if(currentGuestTab === 'top10'){
+    list = list.filter(g => !g.isBlacklisted && totalStayDays(g) > 0)
+               .sort((a,b) => totalStayDays(b) - totalStayDays(a))
+               .slice(0, 10);
+  } else if(currentGuestTab === 'blacklist'){
+    list = list.filter(g => g.isBlacklisted);
+  } else {
+    list = list.filter(g => !g.isBlacklisted);
+  }
+
+  if(filterText){
+    list = filterGuestsInList(list, filterText);
+  }
+
+  document.getElementById('guestEmpty').style.display = list.length ? 'none' : 'block';
+
+  tbody.innerHTML = list.map((g, idx) => {
+    const gStays = guestStays(g.id).sort((a,b)=> (b.checkIn||'').localeCompare(a.checkIn||''));
+    const recent = gStays.slice(0,5);
+    const recentHtml = recent.map(s=>`<li><span>Kamar ${s.room}</span><span>${fmtDate(s.checkIn)} → ${fmtDate(s.checkOut)} (${calcDays(s.checkIn, s.checkOut)} hari)</span></li>`).join('');
+
+    const prefixRank = currentGuestTab === 'top10' ? `<b>#${idx+1} </b>` : '';
+
+    return `<tr>
+      <td>${prefixRank}<a class="clickable-name" data-viewdetail="${g.id}">${(g.name||'').toUpperCase()}</a> ${g.isBlacklisted ? '<span style="color:var(--danger);font-weight:700;font-size:10px;">[BLACKLIST]</span>' : ''}</td>
+      <td>${g.phone||'-'}</td>
+      <td>${(g.region||'-').toUpperCase()}</td>
+      <td>${(g.marital||'-').toUpperCase()}</td>
+      <td>${tierBadge(g)}</td>
+      <td><b>${totalStayDays(g)} Hari</b></td>
+      <td>${(g.plate||'-').toUpperCase()}</td>
+      <td style="min-width:200px;">
+        ${gStays.length===0? '<span style="color:var(--gray-soft);">Belum ada</span>' : `
+        <ul class="history-list">${recentHtml}</ul>
+        ${gStays.length>5? `<button class="history-toggle" data-viewdetail="${g.id}">+ Lihat ${gStays.length - 5} riwayat lainnya</button>`:''}
+        `}
+      </td>
+      <td style="white-space:nowrap;">
+        <button class="btn ghost sm" data-edit="${g.id}">Edit</button>
+        <button class="btn ghost sm" data-del="${g.id}" style="color:var(--danger);">Hapus</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  renderBookingList();
+}
+
+/* BOOKING LIST MTD LOGIC */
+function getBookingMonths(){
+  const months = new Set();
+  stays.forEach(s => {
+    if(s.checkIn && s.status !== 'unchecked_in'){
+      months.add(s.checkIn.slice(0,7));
+    }
+  });
+  months.add(todayISO().slice(0,7));
+  return Array.from(months).sort().reverse();
+}
+
+function updateBookingMonthDropdown(){
+  const dropdown = document.getElementById('bookingMonthDropdown');
+  const selected = dropdown.value;
+  const months = getBookingMonths();
+  dropdown.innerHTML = months.map(m => `<option value="${m}">${monthLabel(m)} (${m})</option>`).join('');
+  if(months.includes(selected)){
+    dropdown.value = selected;
+  } else {
+    dropdown.value = todayISO().slice(0,7);
+  }
+}
+
+document.getElementById('bookingMonthDropdown').addEventListener('change', () => {
+  bookingListLimit = 10;
+  renderBookingList();
+});
+
+document.getElementById('btnShowMoreBooking').addEventListener('click', () => {
+  bookingListLimit += 10;
+  renderBookingList();
+});
+
+function getFilteredBookingList(){
+  const selectedMonth = document.getElementById('bookingMonthDropdown').value || todayISO().slice(0,7);
+  // Filter yang check in di bulan terpilih, susun berdasar tanggal check-in (terlama ke terbaru atau terbaru ke terlama)
+  let list = stays.filter(s => s.checkIn && s.checkIn.slice(0,7) === selectedMonth && s.status !== 'unchecked_in');
+  list.sort((a,b) => a.checkIn.localeCompare(b.checkIn));
+  return list;
+}
+
+function renderBookingList(){
+  updateBookingMonthDropdown();
+  const list = getFilteredBookingList();
+  const tbody = document.getElementById('bookingListTable');
+  const emptyEl = document.getElementById('bookingListEmpty');
+  const showMoreWrap = document.getElementById('bookingShowMoreWrap');
+
+  if(list.length === 0){
+    tbody.innerHTML = '';
+    emptyEl.style.display = 'block';
+    showMoreWrap.style.display = 'none';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  const displayedList = list.slice(0, bookingListLimit);
+
+  tbody.innerHTML = displayedList.map(s => `
+    <tr>
+      <td><a class="clickable-name" data-openbill="${s.id}">${(s.guestName||'TAMU').toUpperCase()}</a></td>
+      <td>${fmtDate(s.checkIn)}</td>
+      <td><b>Kamar ${s.room}</b></td>
+    </tr>
+  `).join('');
+
+  if(list.length > bookingListLimit){
+    showMoreWrap.style.display = 'block';
+  } else {
+    showMoreWrap.style.display = 'none';
+  }
+}
+
+document.getElementById('bookingListTable').addEventListener('click', e => {
+  const btn = e.target.closest('[data-openbill]');
+  if(btn){
+    const sId = btn.dataset.openbill;
+    openHotelBillModal(sId);
+  }
+});
+
+/* DOWNLOAD BOOKING LIST JADI TABEL EXCEL RAPI (.XLSX) */
+document.getElementById('btnDownloadBookingList').addEventListener('click', () => {
+  const list = getFilteredBookingList();
+  const selectedMonth = document.getElementById('bookingMonthDropdown').value || todayISO().slice(0,7);
+
+  if(list.length === 0){
+    alert('Tidak ada data booking di bulan ini untuk didownload.');
+    return;
+  }
+
+  const excelData = list.map((s, idx) => {
+    const duration = calcDays(s.checkIn, s.checkOut);
+    const ratePerNight = duration > 0 ? Math.round(s.amount / duration) : s.amount;
+    return {
+      "No": idx + 1,
+      "Nama Tamu": s.guestName.toUpperCase(),
+      "Tanggal Check-In": s.checkIn,
+      "Tanggal Check-Out": s.checkOut,
+      "Nomor Kamar": s.room,
+      "Kategori": roomCatLabel(s.category),
+      "Lama Inap (Hari)": duration,
+      "Harga per Malam (Rp)": ratePerNight,
+      "Total Harga (Rp)": s.amount,
+      "Metode Pembayaran": s.paymentMethod
+    };
+  });
+
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Booking List");
+
+  // Lebar kolom rapi
+  worksheet['!cols'] = [
+    { wch: 5 },  { wch: 22 }, { wch: 15 }, { wch: 15 },
+    { wch: 12 }, { wch: 16 }, { wch: 15 }, { wch: 18 },
+    { wch: 18 }, { wch: 18 }
+  ];
+
+  XLSX.writeFile(workbook, `Booking_List_Hotel_Thayyiba_${selectedMonth}.xlsx`);
+});
+
+/* POPUP BILL HOTEL PROFESIONAL LOGIC */
+function openHotelBillModal(stayId){
+  const s = stays.find(x => x.id === stayId);
+  if(!s) return;
+  currentBillStay = s;
+
+  const duration = calcDays(s.checkIn, s.checkOut);
+  const ratePerNight = duration > 0 ? Math.round(s.amount / duration) : s.amount;
+  const cat = roomCategoryOf(s.room);
+
+  document.getElementById('popBillNo').textContent = `NO: BILL-${s.id.toUpperCase().slice(0,6)}`;
+  document.getElementById('popGuestName').textContent = (s.guestName||'TAMU').toUpperCase();
+  document.getElementById('popRoomNum').textContent = `Kamar ${s.room}`;
+  document.getElementById('popCheckIn').textContent = fmtDate(s.checkIn);
+  document.getElementById('popCheckOut').textContent = fmtDate(s.checkOut);
+  document.getElementById('popRoomCatLabel').textContent = `Sewa Kamar ${cat ? cat.label : ''}`;
+  document.getElementById('popRoomDetailSub').textContent = `Nomor Kamar ${s.room} • ${s.paymentMethod}`;
+  document.getElementById('popDuration').textContent = `${duration} Malam`;
+  document.getElementById('popRatePerNight').textContent = fmtMoney(ratePerNight);
+  document.getElementById('popSubtotal').textContent = fmtMoney(s.amount);
+  document.getElementById('popGrandTotal').textContent = fmtMoney(s.amount);
+  document.getElementById('popPaymentStatus').value = s.paymentStatus || 'LUNAS';
+
+  openModal('billModal');
+}
+
+document.getElementById('popPaymentStatus').addEventListener('change', (e) => {
+  if(currentBillStay){
+    currentBillStay.paymentStatus = e.target.value;
+    persistAll();
+  }
+});
+
+/* DOWNLOAD BILL HOTEL POPUP TO PDF */
+document.getElementById('btnDownloadBillPDF').addEventListener('click', () => {
+  if(!currentBillStay) return;
+  const element = document.getElementById('hotelBillContainer');
+  const filename = `Hotel_Bill_${(currentBillStay.guestName||'TAMU').replace(/\s+/g, '_')}_Room${currentBillStay.room}.pdf`;
+
+  const opt = {
+    margin:       [0.3, 0.3, 0.3, 0.3],
+    filename:     filename,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(element).save();
+});
+
+document.getElementById('guestTable').addEventListener('click', e=>{
+  const view = e.target.closest('[data-viewdetail]');
+  if(view){ openGuestDetailModal(view.dataset.viewdetail); return; }
+  const edit = e.target.closest('[data-edit]');
+  if(edit){ openGuestModal(edit.dataset.edit); return; }
+  const del = e.target.closest('[data-del]');
+  if(del){
+    if(confirm('Hapus data tamu ini? Semua riwayat inapnya juga akan terhapus.')){
+      const gid = del.dataset.del;
+      guests = guests.filter(g=>g.id!==gid);
+      stays = stays.filter(s=>s.guestId!==gid);
+      persistAll(); renderGuests(document.getElementById('guestSearch').value); renderRooms(); renderCashflow(); renderBookingList();
+    }
+  }
+});
+
+function openGuestDetailModal(guestId){
+  const g = guests.find(x=>x.id===guestId); if(!g) return;
+  const body = document.getElementById('guestDetailBody');
+  const gStays = guestStays(g.id).sort((a,b)=> (b.checkIn||'').localeCompare(a.checkIn||''));
+
+  const staysListHtml = gStays.map(s=>`
+    <li>
+      <div>
+        <b>Kamar ${s.room}</b> (${roomCatLabel(s.category)})<br>
+        <small>${fmtDate(s.checkIn)} s/d ${fmtDate(s.checkOut)} (${calcDays(s.checkIn, s.checkOut)} Hari) • ${s.guestCount||1} orang • ${s.paymentMethod} ${s.paymentMethod==='Prepaid'?'':fmtMoney(s.amount)}</small>
+      </div>
+      <div>
+        <button class="btn ghost sm" data-editstay="${s.id}">Edit</button>
+        <button class="btn ghost sm" data-delstay="${s.id}" style="color:var(--danger);">Hapus</button>
+      </div>
+    </li>
+  `).join('');
+
+  body.innerHTML = `
+    <div style="padding:10px;background:var(--blue-wash);border-radius:8px;margin-bottom:10px;">
+      <h3 style="margin:0;font-size:16px;">${(g.name||'').toUpperCase()} ${tierBadge(g)} ${g.isBlacklisted ? '<span style="color:var(--danger);font-size:12px;">[BLACKLIST]</span>' : ''}</h3>
+      <div style="font-size:12px;margin-top:4px;color:var(--blue-dark);">
+        HP: <b>${g.phone||'-'}</b> | Asal: <b>${(g.region||'-').toUpperCase()}</b> | Status: <b>${(g.marital||'-').toUpperCase()}</b> | Kendaraan: <b>${(g.plate||'-').toUpperCase()}</b>
+        <br>Total Hari Menginap: <b>${totalStayDays(g)} Hari</b> | Total Booking: <b>${gStays.length} Kali</b>
+      </div>
+    </div>
+    <div>
+      <h4 style="margin:10px 0 6px;">Riwayat Menginap Lengkap (${gStays.length} Kali)</h4>
+      <ul class="history-list" style="max-height:220px;overflow-y:auto;">
+        ${staysListHtml || '<div style="color:var(--gray-soft);padding:10px;">Belum ada riwayat inap.</div>'}
+      </ul>
+    </div>`;
+
+  body.querySelectorAll('[data-editstay]').forEach(b=>{
+    b.onclick = ()=>{ closeModal('guestDetailModal'); openEditStayModal(b.dataset.editstay); };
+  });
+  body.querySelectorAll('[data-delstay]').forEach(b=>{
+    b.onclick = ()=>{
+      if(confirm('Hapus riwayat inap ini?')){
+        stays = stays.filter(s=>s.id!==b.dataset.delstay);
+        persistAll(); renderGuests(); openGuestDetailModal(guestId); renderCashflow(); renderBookingList();
+      }
+    };
+  });
+
+  openModal('guestDetailModal');
+}
+
+function roomCatLabel(key){ const c=ROOM_CATEGORIES.find(x=>x.key===key); return c?c.label:key; }
+
+function filterGuestsInList(arr, q){
+  q = q.toLowerCase();
+  return arr.filter(g => (g.name||'').toLowerCase().includes(q) || (g.phone||'').toLowerCase().includes(q));
+}
+function highlight(text, q){
+  if(!q) return text;
+  const i = text.toLowerCase().indexOf(q.toLowerCase());
+  if(i===-1) return text;
+  return text.slice(0,i) + '<mark>' + text.slice(i,i+q.length) + '</mark>' + text.slice(i+q.length);
+}
+
+const guestSearchInput = document.getElementById('guestSearch');
+const suggestBox = document.getElementById('guestSuggest');
+guestSearchInput.addEventListener('input', ()=>{
+  const q = guestSearchInput.value.trim();
+  renderGuests(q);
+  if(!q){ suggestBox.classList.remove('show'); return; }
+  const matches = filterGuestsInList(guests, q).slice(0,6);
+  if(!matches.length){ suggestBox.classList.remove('show'); suggestBox.innerHTML=''; return; }
+  suggestBox.innerHTML = matches.map(g=>`
+    <div class="suggest-item" data-goto="${g.id}">
+      <b>${highlight((g.name||'').toUpperCase(),q.toUpperCase())}</b><span>${highlight(g.phone||'-',q)}</span>
+    </div>`).join('');
+  suggestBox.classList.add('show');
+});
+
+suggestBox.addEventListener('click', e=>{
+  const item = e.target.closest('[data-goto]'); if(!item) return;
+  guestSearchInput.value='';
+  suggestBox.classList.remove('show');
+  openGuestDetailModal(item.dataset.goto);
+});
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.search-wrap')) suggestBox.classList.remove('show');
+});
+
+let editingGuestId = null;
+document.getElementById('btnAddGuest').addEventListener('click', ()=>openGuestModal(null));
+function openGuestModal(id){
+  editingGuestId = id;
+  const g = id ? guests.find(x=>x.id===id) : null;
+  document.getElementById('guestModalTitle').textContent = g ? 'Edit Tamu' : 'Tambah Tamu';
+  document.getElementById('gName').value = g? (g.name||'').toUpperCase().slice(0,20) : '';
+  document.getElementById('gPhone').value = g? g.phone : '';
+  document.getElementById('gRegion').value = g? (g.region||'').toUpperCase() : '';
+  document.getElementById('gMarital').value = g? (g.marital||'SINGLE').toUpperCase() : 'SINGLE';
+  document.getElementById('gPlate').value = g? (g.plate||'').toUpperCase() : '';
+  document.getElementById('gTier').value = g? (g.tierOverride||'') : '';
+  document.getElementById('gBlacklist').value = g? String(!!g.isBlacklisted) : 'false';
+  
+  const modalBody = document.getElementById('guestModal').querySelector('.modal-body');
+  modalBody.querySelectorAll('input[type="text"]').forEach(inp => {
+    inp.addEventListener('input', () => { inp.value = inp.value.toUpperCase(); });
+  });
+
+  openModal('guestModal');
+}
+document.getElementById('gSave').addEventListener('click', ()=>{
+  const name = document.getElementById('gName').value.trim().toUpperCase().slice(0,20);
+  if(!name){ alert('Nama lengkap wajib diisi.'); return; }
+  const data = {
+    name,
+    phone: document.getElementById('gPhone').value.trim().toUpperCase(),
+    region: document.getElementById('gRegion').value.trim().toUpperCase(),
+    marital: document.getElementById('gMarital').value.toUpperCase(),
+    plate: document.getElementById('gPlate').value.trim().toUpperCase(),
+    tierOverride: document.getElementById('gTier').value || null,
+    isBlacklisted: document.getElementById('gBlacklist').value === 'true'
+  };
+  if(editingGuestId){
+    const g = guests.find(x=>x.id===editingGuestId);
+    Object.assign(g, data);
+  } else {
+    guests.push({ id:uid(), ...data });
+  }
+  persistAll(); renderGuests(); renderRooms(); closeModal('guestModal');
+});
+
+let editingStayId = null;
+function openEditStayModal(stayId){
+  editingStayId = stayId;
+  const s = stays.find(x=>x.id===stayId); if(!s) return;
+  const sel = document.getElementById('esRoom');
+  sel.innerHTML = ROOM_CATEGORIES.map(c=>`<optgroup label="${c.label}">${c.rooms.map(r=>`<option value="${r}">Kamar ${r}</option>`).join('')}</optgroup>`).join('');
+  sel.value = s.room;
+  document.getElementById('esCheckin').value = s.checkIn;
+  document.getElementById('esCheckout').value = s.checkOut;
+  document.getElementById('esGuestCount').value = s.guestCount || 1;
+  openModal('editStayModal');
+}
+document.getElementById('esSave').addEventListener('click', ()=>{
+  const s = stays.find(x=>x.id===editingStayId);
+  if(s){
+    s.room = Number(document.getElementById('esRoom').value);
+    s.category = roomCategoryOf(s.room).key;
+    s.checkIn = document.getElementById('esCheckin').value;
+    s.checkOut = document.getElementById('esCheckout').value;
+    s.guestCount = Number(document.getElementById('esGuestCount').value) || 1;
+    persistAll(); renderGuests(); renderCashflow(); renderBookingList(); closeModal('editStayModal');
+    openGuestDetailModal(s.guestId);
+  }
+});
+
+/* MODAL HELPERS */
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click', e=>{
+  closeModal(e.target.closest('.overlay').id);
+}));
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click', e=>{ if(e.target===o) closeModal(o.id); }));
+
+/* CASHFLOW PAGE */
+let cfSelectedDate = selectedRoomDate;
+document.getElementById('cfFilterDate').value = cfSelectedDate;
+document.getElementById('cfStartDate').value = todayISO();
+document.getElementById('cfEndDate').value = todayISO();
+
+let cfShowAllFlag=false;
+document.getElementById('cfFilterDate').addEventListener('change', e=>{ 
+  cfSelectedDate = e.target.value;
+  cfShowAllFlag=false; 
+  renderCashflow(); 
+});
+
+document.getElementById('cfPrevDay').addEventListener('click', ()=>{
+  const d = new Date(cfSelectedDate); d.setDate(d.getDate() - 1);
+  cfSelectedDate = d.toISOString().slice(0,10);
+  document.getElementById('cfFilterDate').value = cfSelectedDate;
+  cfShowAllFlag = false;
+  renderCashflow();
+});
+document.getElementById('cfNextDay').addEventListener('click', ()=>{
+  const d = new Date(cfSelectedDate); d.setDate(d.getDate() + 1);
+  cfSelectedDate = d.toISOString().slice(0,10);
+  document.getElementById('cfFilterDate').value = cfSelectedDate;
+  cfShowAllFlag = false;
+  renderCashflow();
+});
+
+document.getElementById('cfShowAll').addEventListener('click', ()=>{ cfShowAllFlag=true; renderCashflow(); });
+
+function renderCashflow(){
+  const dateFilter = document.getElementById('cfFilterDate').value || selectedRoomDate;
+  const tbody = document.getElementById('cashflowTable');
+
+  const currentMonthPrefix = todayISO().slice(0,7);
+  let mtdCash = 0, mtdTransfer = 0;
+
+  stays.forEach(s=>{
+    if(s.checkIn && s.checkIn.slice(0,7) === currentMonthPrefix && s.status !== 'unchecked_in'){
+      if(s.paymentMethod === 'Cash') mtdCash += s.amount;
+      if(s.paymentMethod === 'Transfer') mtdTransfer += s.amount;
+    }
+  });
+
+  document.getElementById('mtdCash').textContent = fmtMoney(mtdCash);
+  document.getElementById('mtdTransfer').textContent = fmtMoney(mtdTransfer);
+  document.getElementById('mtdTotal').textContent = fmtMoney(mtdCash + mtdTransfer);
+
+  let list = [];
+  if(!cfShowAllFlag){
+    list = stays.filter(s => s.checkIn === dateFilter && s.status !== 'unchecked_in');
+    document.getElementById('cfListDesc').textContent = `Menampilkan data kamar aktif pada tanggal ${fmtDate(dateFilter)}`;
+  } else {
+    list = stays.filter(s => s.status !== 'unchecked_in').sort((a,b)=> (b.checkIn||'').localeCompare(a.checkIn||''));
+    document.getElementById('cfListDesc').textContent = 'Menampilkan semua data riwayat transaksi';
+  }
+
+  document.getElementById('cfEmpty').style.display = list.length? 'none':'block';
+  tbody.innerHTML = list.map(c=>`
+    <tr>
+      <td>${fmtDate(c.checkIn)}</td>
+      <td>Kamar ${c.room}</td>
+      <td>${(c.guestName||'-').toUpperCase()}</td>
+      <td><b>${c.paymentMethod}</b></td>
+      <td>${c.paymentMethod==='Prepaid'?'Lunas di awal':'Pemasukan sewa kamar'}</td>
+      <td><b>${c.paymentMethod==='Prepaid'?'Prepaid':fmtMoney(c.amount)}</b></td>
+    </tr>`).join('');
+
+  const totalFiltered = list.reduce((s,c)=>s+c.amount,0);
+  document.getElementById('cfTotal').textContent = 'Total Filter: '+fmtMoney(totalFiltered);
+}
+
+document.getElementById('btnDownloadCF').addEventListener('click', () => {
+  const start = document.getElementById('cfStartDate').value;
+  const end = document.getElementById('cfEndDate').value;
+
+  if(!start || !end){ alert('Pilih rentang tanggal laporan terlebih dahulu.'); return; }
+
+  const filteredStays = stays.filter(s => s.checkIn >= start && s.checkIn <= end && s.status !== 'unchecked_in');
+
+  let csv = `Laporan Cashflow Hotel Thayyiba (${start} s/d ${end})\n\n`;
+  csv += `Tanggal Check In,Kamar,Nama Tamu,Metode Pembayaran,Nominal\n`;
+
+  let totalAmount = 0;
+  filteredStays.forEach(s => {
+    csv += `${s.checkIn},Kamar ${s.room},"${s.guestName}",${s.paymentMethod},${s.amount}\n`;
+    totalAmount += s.amount;
+  });
+
+  csv += `\nTotal Pemasukan,,,,${totalAmount}\n`;
+
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `laporan-cashflow-${start}-sampai-${end}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+/* BILLS & DROPDOWN FILTER DENGAN GARIS STRIP SAAT TIDAK DIPILIH */
+document.getElementById('billMonth').value = todayISO().slice(0,7);
+
+document.getElementById('billForm').addEventListener('submit', e=>{
+  e.preventDefault();
+  bills.push({
+    id:uid(),
+    month: document.getElementById('billMonth').value,
+    category: document.getElementById('billCategory').value,
+    amount: Number(document.getElementById('billAmount').value)||0
+  });
+  persistAll();
+  document.getElementById('billForm').reset();
+  document.getElementById('billMonth').value = todayISO().slice(0,7);
+  updateBillDropdownOptions();
+  renderBills(); renderAnalyticsCharts();
+});
+
+document.getElementById('billFilterMonth').addEventListener('change', () => {
+  renderBills();
+});
+
+function updateBillDropdownOptions(){
+  const dropdown = document.getElementById('billFilterMonth');
+  const currentVal = dropdown.value;
+  const months = Array.from(new Set(bills.map(b => b.month))).sort().reverse();
+  
+  // OPSI SAAT TIDAK DIPILIH / TIDAK DIKLIK ADALAH GARIS STRIP ("-")
+  let optionsHtml = '<option value="ALL">-</option>';
+  months.forEach(m => {
+    optionsHtml += `<option value="${m}">${monthLabel(m)} (${m})</option>`;
+  });
+  dropdown.innerHTML = optionsHtml;
+  dropdown.value = months.includes(currentVal) ? currentVal : 'ALL';
+}
+
+function renderBills(){
+  updateBillDropdownOptions();
+  const filterValue = document.getElementById('billFilterMonth').value;
+  const tbody = document.getElementById('billTable');
+  
+  let list = bills.slice().sort((a,b)=> b.month.localeCompare(a.month));
+  if(filterValue && filterValue !== 'ALL'){
+    list = list.filter(b => b.month === filterValue);
+  }
+
+  document.getElementById('billEmpty').style.display = list.length? 'none':'block';
+  tbody.innerHTML = list.map(b=>`
+    <tr><td>${b.month}</td><td>${b.category}</td><td><b>${fmtMoney(b.amount)}</b></td>
+    <td><button class="btn ghost sm" data-billdel="${b.id}" style="color:var(--danger);">Hapus</button></td></tr>`).join('');
+}
+
+document.getElementById('billTable').addEventListener('click', e=>{
+  const del = e.target.closest('[data-billdel]'); if(!del) return;
+  bills = bills.filter(b=>b.id!==del.dataset.billdel);
+  persistAll(); renderBills(); renderAnalyticsCharts();
+});
+
+/* ANALYTICS CHARTS LAYER */
+let salesChartInstance=null, bill3MonthBarInstance=null, billLineChartInstance=null;
+
+/* Helper: tampilkan pesan di atas chart-box jika chart gagal/tidak ada data,
+   dan hapus pesan lama sebelum render ulang. Ini mencegah 1 error di satu
+   chart membuat chart lain di bawahnya ikut tidak dirender. */
+function clearChartEmptyMsg(canvasId){
+  const ctx = document.getElementById(canvasId);
+  if(!ctx) return;
+  const box = ctx.closest('.chart-box');
+  if(!box) return;
+  const old = box.querySelector('.chart-empty-msg');
+  if(old) old.remove();
+  ctx.style.display = '';
+}
+function showChartEmptyMsg(canvasId, message){
+  const ctx = document.getElementById(canvasId);
+  if(!ctx) return;
+  const box = ctx.closest('.chart-box');
+  if(!box) return;
+  clearChartEmptyMsg(canvasId);
+  ctx.style.display = 'none';
+  const div = document.createElement('div');
+  div.className = 'chart-empty-msg';
+  div.innerHTML = message;
+  box.appendChild(div);
+}
+
+function monthLabel(ym){
+  if(!ym) return '-';
+  const [y,m] = ym.split('-');
+  return new Date(Number(y), Number(m)-1, 1).toLocaleDateString('id-ID',{month:'short', year:'2-digit'});
+}
+
+/* DIAGRAM BATANG TREN PENJUALAN TIPE KAMAR (YTD GROUPED BERDAMPINGAN DARI DATA KAMAR HARI INI) */
+function getYTDMonths(){
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth(); // 0-indexed
+  const months = [];
+  for(let m = 0; m <= currentMonth; m++){
+    const mm = String(m + 1).padStart(2, '0');
+    months.push(`${currentYear}-${mm}`);
+  }
+  return months;
+}
+
+function renderSalesChart(){
+ try{
+  if(typeof Chart === 'undefined'){
+    if(!window.__chartJsLoadFailed){ setTimeout(renderSalesChart, 400); return; }
+    showChartEmptyMsg('salesChart', 'Gagal memuat grafik.<br><b>Library Chart.js tidak berhasil dimuat</b> (cek koneksi internet, lalu refresh halaman).<br><button onclick="location.reload()" style="margin-top:8px;padding:4px 10px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;font-size:11.5px;">Muat Ulang Halaman</button>');
+    return;
+  }
+  const ytdMonths = getYTDMonths();
+  const labels = ytdMonths.map(monthLabel);
+
+  // Kalau tidak ada satupun data stays yang cocok dengan tahun berjalan, kasih tahu penggunanya
+  const hasAnyYTDData = stays.some(s => s.checkIn && ytdMonths.includes(s.checkIn.slice(0,7)) && s.status !== 'unchecked_in');
+  if(!hasAnyYTDData){
+    clearChartEmptyMsg('salesChart');
+    showChartEmptyMsg('salesChart', `Belum ada data check-in di tahun ${new Date().getFullYear()}.<br>Grafik ini hanya menghitung tamu dengan tanggal Check In di tahun berjalan.`);
+    if(salesChartInstance){ salesChartInstance.destroy(); salesChartInstance=null; }
+    return;
+  }
+  clearChartEmptyMsg('salesChart');
+
+  // Perhitungan total hari menginap (volume terjual YTD) diambil langsung dari seluruh data transaksi di 'stays' (Kamar Hari Ini)
+  const datasets = [
+    {
+      label: 'STANDARD 1',
+      backgroundColor: '#2C7CB8',
+      borderRadius: 4,
+      data: ytdMonths.map(m => {
+        return stays.filter(s => s.checkIn && s.checkIn.slice(0,7) === m && s.category === 'standard1' && s.status !== 'unchecked_in')
+                    .reduce((sum, s) => sum + calcDays(s.checkIn, s.checkOut), 0);
+      })
+    },
+    {
+      label: 'STANDARD 2',
+      backgroundColor: '#4FA3DE',
+      borderRadius: 4,
+      data: ytdMonths.map(m => {
+        return stays.filter(s => s.checkIn && s.checkIn.slice(0,7) === m && s.category === 'standard2' && s.status !== 'unchecked_in')
+                    .reduce((sum, s) => sum + calcDays(s.checkIn, s.checkOut), 0);
+      })
+    },
+    {
+      label: 'FAMILY ROOM',
+      backgroundColor: '#123A5C',
+      borderRadius: 4,
+      data: ytdMonths.map(m => {
+        return stays.filter(s => s.checkIn && s.checkIn.slice(0,7) === m && s.category === 'family' && s.status !== 'unchecked_in')
+                    .reduce((sum, s) => sum + calcDays(s.checkIn, s.checkOut), 0);
+      })
+    }
+  ];
+
+  const ctx = document.getElementById('salesChart');
+  if(!ctx) return;
+  if(salesChartInstance) salesChartInstance.destroy();
+  salesChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+        tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.raw} Hari Terjual` } }
+      },
+      scales: {
+        y: { 
+          title: { display: true, text: 'Volume Hari Terjual (Hari)', font: { size: 11 } },
+          ticks: { stepSize: 1 },
+          grid: { color: '#EEF3F7' }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+ } catch(err){
+   console.error('renderSalesChart error:', err);
+   showChartEmptyMsg('salesChart', 'Terjadi error saat memuat grafik ini.<br>Buka Console (F12) untuk detail error.');
+ }
+}
+
+function get3MonthsData(){
+  const availableMonths = Array.from(new Set(bills.map(b => b.month))).sort();
+  let months = availableMonths.slice(-3);
+  
+  if(months.length === 0){
+    const d = new Date();
+    const currentYM = d.toISOString().slice(0,7);
+    months = [currentYM];
+  }
+
+  const labels = months.map(monthLabel);
+  const cats = ['INDIHOME THAYYIBA','PLN THAYYIBA','PDAM THAYYIBA','PAJAK THAYYIBA'];
+  
+  const catColors = {
+    'INDIHOME THAYYIBA': { bar:'#7FB9E0', line:'#2C7CB8' },
+    'PLN THAYYIBA':      { bar:'#80C4B7', line:'#1E8A56' },
+    'PDAM THAYYIBA':     { bar:'#FAD02C', line:'#D99B00' },
+    'PAJAK THAYYIBA':    { bar:'#E69A9A', line:'#B23A3A' }
+  };
+
+  const datasetsBar = cats.map(c => ({
+    label: c.replace(' THAYYIBA',''),
+    backgroundColor: catColors[c].bar,
+    borderRadius: 4,
+    data: months.map(m => {
+      const b = bills.find(x => x.month === m && x.category === c);
+      return b ? b.amount : 0;
+    })
+  }));
+
+  const datasetsLine = cats.map(c => ({
+    label: c.replace(' THAYYIBA',''),
+    borderColor: catColors[c].line,
+    backgroundColor: catColors[c].line,
+    borderWidth: 2.5,
+    pointRadius: 4,
+    tension: 0.2,
+    fill: false,
+    data: months.map(m => {
+      const b = bills.find(x => x.month === m && x.category === c);
+      return b ? b.amount : 0;
+    })
+  }));
+
+  return { months, labels, cats, datasetsBar, datasetsLine };
+}
+
+function renderBill3MonthBarChart(){
+ try{
+  if(typeof Chart === 'undefined'){
+    if(!window.__chartJsLoadFailed){ setTimeout(renderBill3MonthBarChart, 400); return; }
+    showChartEmptyMsg('bill3MonthBarChart', 'Gagal memuat grafik. Chart.js tidak tersedia.');
+    return;
+  }
+  const { months, labels, datasetsBar } = get3MonthsData();
+  const descEl = document.getElementById('barChartTitleDesc');
+  if(descEl){
+    descEl.textContent = `Perbandingan tagihan 3 Bulan Terakhir (${labels.join(', ')})`;
+  }
+
+  const ctx = document.getElementById('bill3MonthBarChart');
+  if(!ctx) return;
+  clearChartEmptyMsg('bill3MonthBarChart');
+  if(bill3MonthBarInstance) bill3MonthBarInstance.destroy();
+
+  bill3MonthBarInstance = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: datasetsBar },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { boxWidth: 10, font: { size: 11 } } },
+        tooltip: { callbacks: { label: c => `${c.dataset.label}: ${fmtMoney(c.raw)}` } }
+      },
+      scales: {
+        y: { 
+          ticks: { callback: v => 'Rp' + (v/1000) + 'k' },
+          grid: { color: '#EEF3F7' }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+ } catch(err){
+   console.error('renderBill3MonthBarChart error:', err);
+   showChartEmptyMsg('bill3MonthBarChart', 'Terjadi error saat memuat grafik tagihan.');
+ }
+}
+
+function renderBillLineChart(){
+ try{
+  if(typeof Chart === 'undefined'){
+    if(!window.__chartJsLoadFailed){ setTimeout(renderBillLineChart, 400); return; }
+    showChartEmptyMsg('billLineChart', 'Gagal memuat grafik. Chart.js tidak tersedia.');
+    return;
+  }
+  const { months, labels, cats, datasetsLine } = get3MonthsData();
+  const descEl = document.getElementById('lineChartTitleDesc');
+  if(descEl){
+    descEl.textContent = `Kombinasi 4 item tagihan selama 3 bulan terakhir (${labels.join(', ')})`;
+  }
+
+  const ctx = document.getElementById('billLineChart');
+  if(!ctx) return;
+  clearChartEmptyMsg('billLineChart');
+  if(billLineChartInstance) billLineChartInstance.destroy();
+
+  billLineChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: datasetsLine },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { boxWidth: 10, font: { size: 11 } } },
+        tooltip: { callbacks: { label: c => `${c.dataset.label}: ${fmtMoney(c.raw)}` } }
+      },
+      scales: {
+        y: { 
+          ticks: { callback: v => 'Rp' + (v/1000) + 'k' },
+          grid: { color: '#EEF3F7' }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  renderBillPercentageTable(months, labels, cats);
+ } catch(err){
+   console.error('renderBillLineChart error:', err);
+   showChartEmptyMsg('billLineChart', 'Terjadi error saat memuat tren garis tagihan.');
+ }
+}
+
+function renderBillPercentageTable(months, labels, cats){
+  const headerTr = document.getElementById('billPctHeader');
+  const tbody = document.getElementById('billPctTable');
+  
+  if(months.length < 3){
+    headerTr.innerHTML = `
+      <th>Item Tagihan</th>
+      <th>Bulan Terbaru (${labels[labels.length-1] || '-'})</th>
+      <th>Status Data</th>
+    `;
+    tbody.innerHTML = cats.map(c => {
+      const b = bills.find(x => x.month === months[months.length-1] && x.category === c);
+      const val = b ? b.amount : 0;
+      return `<tr>
+        <td><b>${c.replace(' THAYYIBA','')}</b></td>
+        <td>${fmtMoney(val)}</td>
+        <td><span class="badge-pct flat">Membutuhkan min. 3 bulan data untuk persentase</span></td>
+      </tr>`;
+    }).join('');
+    return;
+  }
+
+  const [m1, m2, m3] = months;
+  const [l1, l2, l3] = labels;
+
+  headerTr.innerHTML = `
+    <th>Item Tagihan</th>
+    <th>${l1}</th>
+    <th>${l2}</th>
+    <th>Perubahan (${l1} &rarr; ${l2})</th>
+    <th>${l3}</th>
+    <th>Perubahan (${l2} &rarr; ${l3})</th>
+  `;
+
+  tbody.innerHTML = cats.map(c => {
+    const v1 = (bills.find(x => x.month === m1 && x.category === c) || {}).amount || 0;
+    const v2 = (bills.find(x => x.month === m2 && x.category === c) || {}).amount || 0;
+    const v3 = (bills.find(x => x.month === m3 && x.category === c) || {}).amount || 0;
+
+    const pct12 = calcPctChange(v1, v2);
+    const pct23 = calcPctChange(v2, v3);
+
+    return `<tr>
+      <td><b>${c.replace(' THAYYIBA','')}</b></td>
+      <td>${fmtMoney(v1)}</td>
+      <td>${fmtMoney(v2)}</td>
+      <td>${fmtPctBadge(pct12)}</td>
+      <td>${fmtMoney(v3)}</td>
+      <td>${fmtPctBadge(pct23)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function calcPctChange(oldVal, newVal){
+  if(oldVal === 0 && newVal === 0) return 0;
+  if(oldVal === 0) return 100; // kenaikan 100% dari 0
+  return Math.round(((newVal - oldVal) / oldVal) * 100);
+}
+
+function fmtPctBadge(pct){
+  if(pct > 0){
+    return `<span class="badge-pct up">&uarr; +${pct}%</span>`;
+  } else if(pct < 0){
+    return `<span class="badge-pct down">&darr; ${pct}%</span>`;
+  } else {
+    return `<span class="badge-pct flat">0% (Stabil)</span>`;
+  }
+}
+
+function renderAnalyticsCharts(){
+  renderSalesChart();
+  renderBill3MonthBarChart();
+  renderBillLineChart();
+}
+
+function renderAnalytics(){
+  renderBills();
+  renderAnalyticsCharts();
+}
+
+document.getElementById('btnOpenBillTab').addEventListener('click', () => {
+  const { labels, cats } = get3MonthsData();
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="id">
+    <head>
+      <meta charset="UTF-8">
+      <title>Detail Laporan Tagihan 3 Bulan Terakhir - Hotel Thayyiba</title>
+      <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+      <style>
+        body { font-family: 'Inter', sans-serif; padding: 30px; background: #EFF6FB; color: #123A5C; }
+        h1 { font-family: 'Manrope', sans-serif; font-size: 22px; margin-bottom: 5px; }
+        .sub { color: #8FA4B6; font-size: 13px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 14px rgba(18,58,92,.05); }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #E1E8EE; font-size: 13px; }
+        th { background: #123A5C; color: #fff; font-weight: 700; }
+        tr:last-child td { border-bottom: none; }
+      </style>
+    </head>
+    <body>
+      <h1>Laporan Perbandingan Tagihan Bulanan</h1>
+      <div class="sub">Periode 3 Bulan Terakhir (${labels.join(', ')}) — Hotel Thayyiba</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Bulan</th>
+            <th>Kategori Tagihan</th>
+            <th>Nominal Tagihan</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${bills.slice().sort((a,b)=> b.month.localeCompare(a.month)).map(b => `
+            <tr>
+              <td><b>${monthLabel(b.month)} (${b.month})</b></td>
+              <td>${b.category}</td>
+              <td><b>${fmtMoney(b.amount)}</b></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `;
+  const win = window.open('', '_blank');
+  win.document.write(htmlContent);
+  win.document.close();
+});
+
+document.getElementById('btnPrint').addEventListener('click', ()=>{ window.print(); });
+
+/* INITIALIZE APP */
+renderRooms();
+renderGuests();
+renderBookingList();
+</script>
+</body>
+</html>
